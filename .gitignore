@@ -40,3 +40,5 @@ out/
 build/
 .gradle/
 out/
+
+.DS_Store
