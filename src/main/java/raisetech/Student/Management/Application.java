@@ -1,22 +1,19 @@
 package raisetech.Student.Management;
 
-import ch.qos.logback.core.util.StringUtil;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import raisetech.Student.Management.data.Student;
+import raisetech.Student.Management.data.StudentsCourses;
+import raisetech.Student.Management.repository.StudentRepository;
+
+import java.util.List;
 
 @SpringBootApplication
-@RestController
 public class Application {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
-	}
-
-	@GetMapping("/hello")
-	public String hello(){
-		return "Hello,World!!";
 	}
 }
