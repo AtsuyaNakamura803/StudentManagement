@@ -2,6 +2,7 @@ package raisetech.Student.Management.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.data.Student;
 import raisetech.Student.Management.data.StudentsCourses;
@@ -21,6 +22,7 @@ public class StudentService {
         this.studentRepository = studentRepository;
     }
 
+    @Transactional
     public int saveStudentDetail(StudentDetail studentDetail) {
         Student student = studentDetail.getStudent();
 
