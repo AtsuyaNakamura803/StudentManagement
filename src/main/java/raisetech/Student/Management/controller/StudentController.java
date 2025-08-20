@@ -44,7 +44,7 @@ public class StudentController {
         } catch (IllegalArgumentException e) {
             // 重複メールなどのエラー
             model.addAttribute("studentDetail", studentDetail);
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("errorMessage", e.getMessage()); // ← errorMessage に変更
             return "registerStudent";
         }
     }
