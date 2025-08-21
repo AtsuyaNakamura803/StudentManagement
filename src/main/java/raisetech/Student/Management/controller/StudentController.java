@@ -3,40 +3,71 @@ package raisetech.Student.Management.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.service.StudentService;
-
-import java.util.List;
+import raisetech.Student.Management.data.StudentsCourses;
 
 @Controller
 public class StudentController {
 
-    private final StudentService studentService;
-
     @Autowired
-    public StudentController(StudentService studentService) {
-        this.studentService = studentService;
-    }
+    private StudentService studentService;
 
+    // ==========================
+    // 受講生一覧画面
+    // ==========================
     @GetMapping("/studentList")
-    public String showStudentList(Model model) {
-        List<StudentDetail> studentList = studentService.findAllStudentDetails();
-        model.addAttribute("studentList", studentList);
+    public String studentList(Model model) {
+        model.addAttribute("studentDetails", studentService.findAllStudentDetails());
         return "studentList";
     }
 
+    // ==========================
+    // 新規登録画面を表示
+    // ==========================
     @GetMapping("/newStudent")
-    public String showForm(Model model) {
+    public String newStudent(Model model) {
         model.addAttribute("studentDetail", new StudentDetail());
         return "registerStudent";
     }
 
+    // ==========================
+    // 新規登録 or 編集後の保存
+    // ==========================
     @PostMapping("/registerStudent")
-    public String registerStudent(@ModelAttribute StudentDetail studentDetail) {
-        studentService.saveStudentDetail(studentDetail);
-        return "redirect:/studentList";
+    public String registerStudent(@ModelAttribute StudentDetail studentDetail, Model model) {
+        try {
+            // Student と StudentsCourses をまとめて保存
+            studentService.saveOrUpdateStudentDetail(studentDetail);
+            return "redirect:/studentList";
+        } catch (IllegalArgumentException e) {
+            // 重複メールなどのエラー
+            model.addAttribute("studentDetail", studentDetail);
+            model.addAttribute("errorMessage", e.getMessage()); // ← errorMessage に変更
+            return "registerStudent";
+        }
+    }
+
+    // ==========================
+    // 名前クリックで編集画面に飛ぶ
+    // ==========================
+    @GetMapping("/editStudent/{id}")
+    public String editStudent(@PathVariable Integer id, Model model) {
+        StudentDetail studentDetail = studentService.findStudentDetailById(id)
+                .orElse(new StudentDetail());
+
+        // 編集用に courseNames を再構築
+        if (studentDetail.getStudentsCourses() != null && !studentDetail.getStudentsCourses().isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (StudentsCourses sc : studentDetail.getStudentsCourses()) {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(sc.getCourseName());
+            }
+            studentDetail.setCourseNames(sb.toString());
+        }
+
+        model.addAttribute("studentDetail", studentDetail);
+        return "registerStudent";
     }
 }
