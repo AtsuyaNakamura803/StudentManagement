@@ -28,14 +28,14 @@
         <th>性別</th>
         <th>コース名</th>
         <th>備考</th>
+        <th>削除状態</th>
+        <th>操作</th>
     </tr>
     </thead>
     <tbody>
-    <!-- 修正：モデル属性名を studentDetails に統一 -->
     <tr th:each="studentDetail : ${studentDetails}">
         <td th:text="${studentDetail.student.id}"></td>
         <td>
-            <!-- 名前クリックで編集画面に飛ばす -->
             <a th:href="@{'/editStudent/' + ${studentDetail.student.id}}"
                th:text="${studentDetail.student.name}"></a>
         </td>
@@ -51,6 +51,14 @@
             </ul>
         </td>
         <td th:text="${studentDetail.student.remark}"></td>
+        <td th:text="${studentDetail.student.deleted ? '削除中' : '有効'}"></td>
+        <td>
+            <a th:if="!${studentDetail.student.deleted}"
+               th:href="@{'/editStudent/' + ${studentDetail.student.id}}">編集</a>
+            <form th:if="${studentDetail.student.deleted}" th:action="@{'/restoreStudent/' + ${studentDetail.student.id}}" method="post" style="display:inline">
+                <button type="submit">復活</button>
+            </form>
+        </td>
     </tr>
     </tbody>
 </table>

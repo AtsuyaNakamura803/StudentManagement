@@ -42,9 +42,8 @@ public class StudentController {
             studentService.saveOrUpdateStudentDetail(studentDetail);
             return "redirect:/studentList";
         } catch (IllegalArgumentException e) {
-            // 重複メールなどのエラー
             model.addAttribute("studentDetail", studentDetail);
-            model.addAttribute("errorMessage", e.getMessage()); // ← errorMessage に変更
+            model.addAttribute("errorMessage", e.getMessage());
             return "registerStudent";
         }
     }
@@ -57,7 +56,6 @@ public class StudentController {
         StudentDetail studentDetail = studentService.findStudentDetailById(id)
                 .orElse(new StudentDetail());
 
-        // 編集用に courseNames を再構築
         if (studentDetail.getStudentsCourses() != null && !studentDetail.getStudentsCourses().isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (StudentsCourses sc : studentDetail.getStudentsCourses()) {
@@ -69,5 +67,14 @@ public class StudentController {
 
         model.addAttribute("studentDetail", studentDetail);
         return "registerStudent";
+    }
+
+    // ==========================
+    // 学生を復活させる
+    // ==========================
+    @PostMapping("/restoreStudent/{id}")
+    public String restoreStudent(@PathVariable Integer id) {
+        studentService.restoreStudent(id);
+        return "redirect:/studentList";
     }
 }
