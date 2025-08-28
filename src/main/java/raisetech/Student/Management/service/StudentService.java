@@ -26,6 +26,7 @@ public class StudentService {
 
     /**
      * 学生情報を新規登録または更新
+     * 編集画面でキャンセルチェックされた場合は論理削除
      */
     @Transactional
     public int saveOrUpdateStudentDetail(StudentDetail studentDetail) {
@@ -36,6 +37,12 @@ public class StudentService {
         Student existingByEmail = studentRepository.findByEmailAndNotDeleted(student.getEmail());
         if (existingByEmail != null && (studentId == null || !existingByEmail.getId().equals(studentId))) {
             throw new IllegalArgumentException("このメールアドレスは既に登録されています。");
+        }
+
+        // 編集画面でキャンセルチェックされていたら論理削除
+        if (studentDetail.isCancel() && studentId != null) {
+            deleteStudent(studentId);
+            return studentId;
         }
 
         // 新規登録

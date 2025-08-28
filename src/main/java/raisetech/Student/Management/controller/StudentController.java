@@ -6,7 +6,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.service.StudentService;
-import raisetech.Student.Management.data.StudentsCourses;
 
 @Controller
 public class StudentController {
@@ -28,7 +27,10 @@ public class StudentController {
     // ==========================
     @GetMapping("/newStudent")
     public String newStudent(Model model) {
-        model.addAttribute("studentDetail", new StudentDetail());
+        StudentDetail studentDetail = new StudentDetail();
+        studentDetail.setStudent(new raisetech.Student.Management.data.Student()); // null回避
+        model.addAttribute("studentDetail", studentDetail);
+        model.addAttribute("showCancel", false); // 新規登録はキャンセル非表示
         return "registerStudent";
     }
 
@@ -38,39 +40,38 @@ public class StudentController {
     @PostMapping("/registerStudent")
     public String registerStudent(@ModelAttribute StudentDetail studentDetail, Model model) {
         try {
-            // Student と StudentsCourses をまとめて保存
-            studentService.saveOrUpdateStudentDetail(studentDetail);
+            // 編集画面でキャンセルにチェックが入っていれば論理削除
+            if (studentDetail.isCancel() && studentDetail.getStudent().getId() != null) {
+                studentService.deleteStudent(studentDetail.getStudent().getId());
+            } else {
+                studentService.saveOrUpdateStudentDetail(studentDetail);
+            }
             return "redirect:/studentList";
         } catch (IllegalArgumentException e) {
             model.addAttribute("studentDetail", studentDetail);
             model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("showCancel", studentDetail.getStudent().getId() != null);
             return "registerStudent";
         }
     }
 
     // ==========================
-    // 名前クリックで編集画面に飛ぶ
+    // 編集画面を表示
     // ==========================
     @GetMapping("/editStudent/{id}")
     public String editStudent(@PathVariable Integer id, Model model) {
         StudentDetail studentDetail = studentService.findStudentDetailById(id)
                 .orElse(new StudentDetail());
-
-        if (studentDetail.getStudentsCourses() != null && !studentDetail.getStudentsCourses().isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            for (StudentsCourses sc : studentDetail.getStudentsCourses()) {
-                if (sb.length() > 0) sb.append(",");
-                sb.append(sc.getCourseName());
-            }
-            studentDetail.setCourseNames(sb.toString());
+        if (studentDetail.getStudent() == null) {
+            studentDetail.setStudent(new raisetech.Student.Management.data.Student());
         }
-
         model.addAttribute("studentDetail", studentDetail);
+        model.addAttribute("showCancel", true); // 編集画面はキャンセル表示
         return "registerStudent";
     }
 
     // ==========================
-    // 学生を復活させる
+    // 論理削除済みを復活
     // ==========================
     @PostMapping("/restoreStudent/{id}")
     public String restoreStudent(@PathVariable Integer id) {
