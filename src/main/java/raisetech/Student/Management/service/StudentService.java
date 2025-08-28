@@ -33,13 +33,13 @@ public class StudentService {
         Student student = studentDetail.getStudent();
         Integer studentId = student.getId();
 
-        // 論理削除されていないレコードでメール重複チェック
+        // 有効レコードでメール重複チェック
         Student existingByEmail = studentRepository.findByEmailAndNotDeleted(student.getEmail());
         if (existingByEmail != null && (studentId == null || !existingByEmail.getId().equals(studentId))) {
             throw new IllegalArgumentException("このメールアドレスは既に登録されています。");
         }
 
-        // 編集画面でキャンセルチェックされていたら論理削除
+        // 編集画面でキャンセルチェックされていたら論理削除（＝無効化）
         if (studentDetail.isCancel() && studentId != null) {
             deleteStudent(studentId);
             return studentId;
@@ -56,15 +56,16 @@ public class StudentService {
             }
             studentRepository.updateStudent(student);
 
-            // 論理削除でない場合はコースを一旦削除
+            // 論理削除でない場合はコースを一旦削除して更新
             if (!student.isDeleted()) {
                 studentRepository.deleteCoursesByStudentId(studentId);
             }
         }
 
-        // コース登録（論理削除されていない場合のみ）
+        // コース登録（有効な場合のみ）
         if (!student.isDeleted()) {
-            List<StudentsCourses> coursesToSave = convertCourseNamesToStudentsCourses(studentId, studentDetail.getCourseNames());
+            List<StudentsCourses> coursesToSave =
+                    convertCourseNamesToStudentsCourses(studentId, studentDetail.getCourseNames());
             insertCourses(coursesToSave);
         }
 
@@ -72,10 +73,23 @@ public class StudentService {
     }
 
     /**
-     * 全学生情報取得（削除済みも含む）
+     * 全学生情報取得（無効含む）
      */
     public List<StudentDetail> findAllStudentDetails() {
         List<Student> students = studentRepository.findAll();
+        return students.stream()
+                .map(this::buildStudentDetail)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 有効な学生情報のみ取得（一覧のデフォルト表示用）
+     */
+    public List<StudentDetail> findAllActiveStudentDetails() {
+        List<Student> students = studentRepository.findAll().stream()
+                .filter(s -> !s.isDeleted())
+                .collect(Collectors.toList());
+
         return students.stream()
                 .map(this::buildStudentDetail)
                 .collect(Collectors.toList());
@@ -86,7 +100,9 @@ public class StudentService {
     }
 
     public Optional<StudentDetail> findStudentDetailById(Integer id) {
-        return findById(id).map(this::buildStudentDetail);
+        return findById(id)
+                .filter(s -> !s.isDeleted()) // 無効なら返さない
+                .map(this::buildStudentDetail);
     }
 
     // -------------------- private helpers --------------------
@@ -139,7 +155,7 @@ public class StudentService {
     }
 
     /**
-     * 論理削除する
+     * 論理削除（無効化）
      */
     @Transactional
     public void deleteStudent(Integer studentId) {
@@ -152,7 +168,7 @@ public class StudentService {
     }
 
     /**
-     * 論理削除済みを復活
+     * 論理削除済みを復活（有効化）
      */
     @Transactional
     public void restoreStudent(Integer studentId) {

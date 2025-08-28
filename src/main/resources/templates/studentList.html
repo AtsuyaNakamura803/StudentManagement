@@ -7,7 +7,6 @@
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
         th { background-color: #f5f5f5; }
         ul { margin: 0; padding-left: 20px; }
-        form { display: inline; }
     </style>
 </head>
 <body>
@@ -15,6 +14,14 @@
 
 <!-- 新規登録リンク -->
 <a th:href="@{/newStudent}">新規登録</a>
+
+<!-- 無効を含めるか選択 -->
+<form th:action="@{/studentList}" method="get" style="margin:10px 0;">
+    <label>
+        <input type="checkbox" name="showAll" th:checked="${showAll}"/> 無効を含めて表示
+    </label>
+    <button type="submit">更新</button>
+</form>
 
 <table>
     <thead>
@@ -29,17 +36,14 @@
         <th>性別</th>
         <th>コース名</th>
         <th>備考</th>
-        <th>削除状態</th>
+        <th>状態</th>
         <th>操作</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="studentDetail : ${studentDetails}">
         <td th:text="${studentDetail.student.id}"></td>
-        <td>
-            <a th:href="@{'/editStudent/' + ${studentDetail.student.id}}"
-               th:text="${studentDetail.student.name}"></a>
-        </td>
+        <td th:text="${studentDetail.student.name}"></td>
         <td th:text="${studentDetail.student.kanaName}"></td>
         <td th:text="${studentDetail.student.nickname}"></td>
         <td th:text="${studentDetail.student.email}"></td>
@@ -52,11 +56,15 @@
             </ul>
         </td>
         <td th:text="${studentDetail.student.remark}"></td>
-        <td th:text="${studentDetail.student.deleted ? '削除中' : '有効'}"></td>
+        <td th:text="${studentDetail.student.active ? '有効' : '無効'}"></td>
         <td>
-            <a th:if="!${studentDetail.student.deleted}"
+            <!-- 有効な場合のみ編集リンク表示 -->
+            <a th:if="${studentDetail.student.active}"
                th:href="@{'/editStudent/' + ${studentDetail.student.id}}">編集</a>
-            <form th:if="${studentDetail.student.deleted}" th:action="@{'/restoreStudent/' + ${studentDetail.student.id}}" method="post">
+
+            <!-- 無効な場合のみ復活ボタン表示 -->
+            <form th:if="${!studentDetail.student.active}"
+                  th:action="@{'/restoreStudent/' + ${studentDetail.student.id}}" method="post" style="display:inline">
                 <button type="submit">復活</button>
             </form>
         </td>
