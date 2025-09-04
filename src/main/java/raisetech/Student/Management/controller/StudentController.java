@@ -6,7 +6,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.service.StudentService;
-import raisetech.Student.Management.data.StudentsCourses;
 
 @Controller
 public class StudentController {
@@ -18,8 +17,13 @@ public class StudentController {
     // 受講生一覧画面
     // ==========================
     @GetMapping("/studentList")
-    public String studentList(Model model) {
-        model.addAttribute("studentDetails", studentService.findAllStudentDetails());
+    public String studentList(@RequestParam(name = "showAll", defaultValue = "false") boolean showAll, Model model) {
+        if (showAll) {
+            model.addAttribute("studentDetails", studentService.findAllStudentDetails());
+        } else {
+            model.addAttribute("studentDetails", studentService.findAllActiveStudentDetails());
+        }
+        model.addAttribute("showAll", showAll);
         return "studentList";
     }
 
@@ -29,6 +33,7 @@ public class StudentController {
     @GetMapping("/newStudent")
     public String newStudent(Model model) {
         model.addAttribute("studentDetail", new StudentDetail());
+        model.addAttribute("showCancel", false); // 新規登録はキャンセル非表示
         return "registerStudent";
     }
 
@@ -38,36 +43,37 @@ public class StudentController {
     @PostMapping("/registerStudent")
     public String registerStudent(@ModelAttribute StudentDetail studentDetail, Model model) {
         try {
-            // Student と StudentsCourses をまとめて保存
             studentService.saveOrUpdateStudentDetail(studentDetail);
             return "redirect:/studentList";
         } catch (IllegalArgumentException e) {
-            // 重複メールなどのエラー
             model.addAttribute("studentDetail", studentDetail);
-            model.addAttribute("errorMessage", e.getMessage()); // ← errorMessage に変更
+            model.addAttribute("errorMessage", e.getMessage());
+            // 編集画面か新規画面かでキャンセル表示を切り替え
+            model.addAttribute("showCancel", studentDetail.getStudent().getId() != null);
             return "registerStudent";
         }
     }
 
     // ==========================
-    // 名前クリックで編集画面に飛ぶ
+    // 編集画面を表示（無効なら一覧へリダイレクト）
     // ==========================
     @GetMapping("/editStudent/{id}")
     public String editStudent(@PathVariable Integer id, Model model) {
-        StudentDetail studentDetail = studentService.findStudentDetailById(id)
-                .orElse(new StudentDetail());
+        return studentService.findStudentDetailById(id)
+                .map(studentDetail -> {
+                    model.addAttribute("studentDetail", studentDetail);
+                    model.addAttribute("showCancel", true); // 編集画面はキャンセル表示
+                    return "registerStudent";
+                })
+                .orElse("redirect:/studentList?error=notfound"); // 無効や存在しない場合は一覧へ
+    }
 
-        // 編集用に courseNames を再構築
-        if (studentDetail.getStudentsCourses() != null && !studentDetail.getStudentsCourses().isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            for (StudentsCourses sc : studentDetail.getStudentsCourses()) {
-                if (sb.length() > 0) sb.append(",");
-                sb.append(sc.getCourseName());
-            }
-            studentDetail.setCourseNames(sb.toString());
-        }
-
-        model.addAttribute("studentDetail", studentDetail);
-        return "registerStudent";
+    // ==========================
+    // 復活処理
+    // ==========================
+    @PostMapping("/restoreStudent/{id}")
+    public String restoreStudent(@PathVariable Integer id) {
+        studentService.restoreStudent(id);
+        return "redirect:/studentList?showAll=true";
     }
 }

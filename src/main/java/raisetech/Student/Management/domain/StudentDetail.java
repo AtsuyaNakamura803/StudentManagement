@@ -23,4 +23,11 @@ public class StudentDetail {
     // Thymeleaf用：フォームで表示・編集可能なコースリスト
     private List<StudentsCourses> courses;
 
+    // 編集画面用：キャンセルチェックボックス
+    private boolean cancel;
+
+    // コンストラクタ（必須: 新規登録時に student が null にならないように）
+    public StudentDetail() {
+        this.student = new Student();
+    }
 }

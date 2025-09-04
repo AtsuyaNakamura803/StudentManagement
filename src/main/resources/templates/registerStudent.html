@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>受講生登録</title>
+    <title>受講生登録/編集</title>
 </head>
 <body>
-<h1>受講生登録</h1>
+<h1 th:text="${studentDetail.student.id != null ? '受講生編集' : '受講生登録'}"></h1>
 
 <!-- エラーメッセージ表示 -->
 <div th:if="${errorMessage}">
@@ -24,8 +24,16 @@
     <div>性別: <input type="text" th:field="*{student.sex}" required/></div>
     <div>備考: <input type="text" th:field="*{student.remark}"/></div>
     <div>コース名（カンマ区切り）: <input type="text" th:field="*{courseNames}" placeholder="Java,Spring,AWS"/></div>
+
+    <!-- 編集画面のみキャンセルチェックボックス表示 -->
+    <div th:if="${showCancel}">
+        <label>
+            <input type="checkbox" th:field="*{cancel}"/> キャンセル（論理削除）
+        </label>
+    </div>
+
     <div>
-        <button type="submit">登録</button>
+        <button type="submit" th:text="${studentDetail.student.id != null ? '更新' : '登録'}"></button>
     </div>
 </form>
 </body>

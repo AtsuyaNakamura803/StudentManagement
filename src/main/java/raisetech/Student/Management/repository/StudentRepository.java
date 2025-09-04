@@ -10,17 +10,22 @@ import java.time.LocalDate;
 @Mapper
 public interface StudentRepository {
 
-    @Select("SELECT * FROM students")
+    // 論理削除されていない学生のみ取得
+    @Select("SELECT * FROM students WHERE deleted = FALSE")
     List<Student> search();
+
+    // 全学生取得（削除済み含む）
+    @Select("SELECT * FROM students")
+    List<Student> findAll();
 
     @Select("SELECT COALESCE(MAX(id), 0) FROM students")
     int getMaxId();
 
     @Insert("""
-        INSERT INTO students (name, kanaName, nickname, email, area, age, sex, remark)
-        VALUES (#{name}, #{kanaName}, #{nickname}, #{email}, #{area}, #{age}, #{sex}, #{remark})
+        INSERT INTO students (name, kanaName, nickname, email, area, age, sex, remark, deleted)
+        VALUES (#{name}, #{kanaName}, #{nickname}, #{email}, #{area}, #{age}, #{sex}, #{remark}, #{deleted})
     """)
-    @Options(useGeneratedKeys = true, keyProperty = "id")  // ← 自動採番 ID を取得
+    @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(Student student);
 
     @Insert("""
@@ -48,7 +53,8 @@ public interface StudentRepository {
             area = #{area},
             age = #{age},
             sex = #{sex},
-            remark = #{remark}
+            remark = #{remark},
+            deleted = #{deleted}
         WHERE id = #{id}
     """)
     void updateStudent(Student student);
@@ -62,6 +68,11 @@ public interface StudentRepository {
     @Select("SELECT * FROM students WHERE id = #{id}")
     Student findById(@Param("id") int id);
 
+    // 論理削除されていないレコードでメールを検索（重複チェック用）
+    @Select("SELECT * FROM students WHERE email = #{email} AND deleted = FALSE")
+    Student findByEmailAndNotDeleted(@Param("email") String email);
+
+    // 削除済み含めてメールで検索（復活処理用）
     @Select("SELECT * FROM students WHERE email = #{email}")
-    Student findByEmail(@Param("email") String email);
+    List<Student> findByEmailAll(@Param("email") String email);
 }
