@@ -14,19 +14,10 @@ public class StudentDetail {
     // 学生情報
     private Student student;
 
-    // DB保存用の受講コースリスト
+    // 学生に紐づくコースリスト
     private List<StudentsCourses> studentsCourses;
 
-    // フォーム入力用：カンマ区切りのコース名
-    private String courseNames;
-
-    // Thymeleaf用：フォームで表示・編集可能なコースリスト
-    private List<StudentsCourses> courses;
-
-    // 編集画面用：キャンセルチェックボックス
-    private boolean cancel;
-
-    // コンストラクタ（必須: 新規登録時に student が null にならないように）
+    // コンストラクタ（student が null にならないように初期化）
     public StudentDetail() {
         this.student = new Student();
     }

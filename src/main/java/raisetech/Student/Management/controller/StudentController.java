@@ -1,79 +1,53 @@
 package raisetech.Student.Management.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.service.StudentService;
 
-@Controller
+import java.util.List;
+
+@RestController
 public class StudentController {
 
+    private final StudentService service;
+
     @Autowired
-    private StudentService studentService;
+    public StudentController(StudentService service) {
+        this.service = service;
+    }
 
-    // ==========================
-    // 受講生一覧画面
-    // ==========================
+    // -----------------------------
+    // 受講生全件取得
+    // -----------------------------
     @GetMapping("/studentList")
-    public String studentList(@RequestParam(name = "showAll", defaultValue = "false") boolean showAll, Model model) {
-        if (showAll) {
-            model.addAttribute("studentDetails", studentService.findAllStudentDetails());
-        } else {
-            model.addAttribute("studentDetails", studentService.findAllActiveStudentDetails());
-        }
-        model.addAttribute("showAll", showAll);
-        return "studentList";
+    public List<StudentDetail> getStudentList() {
+        return service.getAllStudents();
     }
 
-    // ==========================
-    // 新規登録画面を表示
-    // ==========================
-    @GetMapping("/newStudent")
-    public String newStudent(Model model) {
-        model.addAttribute("studentDetail", new StudentDetail());
-        model.addAttribute("showCancel", false); // 新規登録はキャンセル非表示
-        return "registerStudent";
+    // -----------------------------
+    // 受講生情報取得（ID指定）
+    // -----------------------------
+    @GetMapping("/student/{id}")
+    public StudentDetail nowStudent(@PathVariable("id") String id) {
+        return service.searchStudentById(id);
     }
 
-    // ==========================
-    // 新規登録 or 編集後の保存
-    // ==========================
+    // -----------------------------
+    // 受講生登録
+    // -----------------------------
     @PostMapping("/registerStudent")
-    public String registerStudent(@ModelAttribute StudentDetail studentDetail, Model model) {
-        try {
-            studentService.saveOrUpdateStudentDetail(studentDetail);
-            return "redirect:/studentList";
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("studentDetail", studentDetail);
-            model.addAttribute("errorMessage", e.getMessage());
-            // 編集画面か新規画面かでキャンセル表示を切り替え
-            model.addAttribute("showCancel", studentDetail.getStudent().getId() != null);
-            return "registerStudent";
-        }
+    public String registerStudent(@RequestBody StudentDetail studentDetail) {
+        service.registerStudent(studentDetail);
+        return studentDetail.getStudent().getName() + "さんの登録が完了しました。";
     }
 
-    // ==========================
-    // 編集画面を表示（無効なら一覧へリダイレクト）
-    // ==========================
-    @GetMapping("/editStudent/{id}")
-    public String editStudent(@PathVariable Integer id, Model model) {
-        return studentService.findStudentDetailById(id)
-                .map(studentDetail -> {
-                    model.addAttribute("studentDetail", studentDetail);
-                    model.addAttribute("showCancel", true); // 編集画面はキャンセル表示
-                    return "registerStudent";
-                })
-                .orElse("redirect:/studentList?error=notfound"); // 無効や存在しない場合は一覧へ
-    }
-
-    // ==========================
-    // 復活処理
-    // ==========================
-    @PostMapping("/restoreStudent/{id}")
-    public String restoreStudent(@PathVariable Integer id) {
-        studentService.restoreStudent(id);
-        return "redirect:/studentList?showAll=true";
+    // -----------------------------
+    // 受講生更新
+    // -----------------------------
+    @PostMapping("/updateStudent")
+    public String updateStudent(@RequestBody StudentDetail studentDetail) {
+        service.updateStudent(studentDetail);
+        return studentDetail.getStudent().getName() + "さんの更新が成功しました。";
     }
 }

@@ -1,7 +1,7 @@
 package raisetech.Student.Management.service;
 
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.data.Student;
@@ -9,184 +9,75 @@ import raisetech.Student.Management.data.StudentsCourses;
 import raisetech.Student.Management.repository.StudentRepository;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
 
-    private final StudentRepository studentRepository;
+    private final StudentRepository repository;
 
     @Autowired
-    public StudentService(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
+    public StudentService(StudentRepository repository) {
+        this.repository = repository;
     }
 
-    /**
-     * 学生情報を新規登録または更新
-     * 編集画面でキャンセルチェックされた場合は論理削除
-     */
+    // -----------------------------
+    // 受講生全件取得
+    // -----------------------------
+    public List<StudentDetail> getAllStudents() {
+        List<Student> students = repository.searchAllStudents();
+        return students.stream().map(student -> {
+            StudentDetail detail = new StudentDetail();
+            detail.setStudent(student);
+            detail.setStudentsCourses(repository.searchStudentCourses(student.getId()));
+            return detail;
+        }).toList();
+    }
+
+    // -----------------------------
+    // 受講生情報取得（ID指定）
+    // -----------------------------
+    public StudentDetail searchStudentById(String id) {
+        int studentId;
+        try {
+            studentId = Integer.parseInt(id);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("IDは整数で指定してください: " + id);
+        }
+
+        Student student = repository.searchStudent(studentId);
+        List<StudentsCourses> studentsCourses = repository.searchStudentCourses(studentId);
+
+        StudentDetail studentDetail = new StudentDetail();
+        studentDetail.setStudent(student);
+        studentDetail.setStudentsCourses(studentsCourses);
+
+        return studentDetail;
+    }
+
+    // -----------------------------
+    // 受講生登録
+    // -----------------------------
     @Transactional
-    public int saveOrUpdateStudentDetail(StudentDetail studentDetail) {
-        Student student = studentDetail.getStudent();
-        Integer studentId = student.getId();
-
-        // 有効レコードでメール重複チェック
-        Student existingByEmail = studentRepository.findByEmailAndNotDeleted(student.getEmail());
-        if (existingByEmail != null && (studentId == null || !existingByEmail.getId().equals(studentId))) {
-            throw new IllegalArgumentException("このメールアドレスは既に登録されています。");
-        }
-
-        // 編集画面でキャンセルチェックされていたら論理削除（＝無効化）
-        if (studentDetail.isCancel() && studentId != null) {
-            deleteStudent(studentId);
-            return studentId;
-        }
-
-        // 新規登録
-        if (studentId == null) {
-            studentRepository.insert(student);
-            studentId = student.getId();
-        } else {
-            // 更新時、論理削除された場合はメールをユニーク化
-            if (student.isDeleted()) {
-                student.setEmail(student.getEmail() + "-deleted-" + student.getId());
-            }
-            studentRepository.updateStudent(student);
-
-            // 論理削除でない場合はコースを一旦削除して更新
-            if (!student.isDeleted()) {
-                studentRepository.deleteCoursesByStudentId(studentId);
-            }
-        }
-
-        // コース登録（有効な場合のみ）
-        if (!student.isDeleted()) {
-            List<StudentsCourses> coursesToSave =
-                    convertCourseNamesToStudentsCourses(studentId, studentDetail.getCourseNames());
-            insertCourses(coursesToSave);
-        }
-
-        return studentId;
-    }
-
-    /**
-     * 全学生情報取得（無効含む）
-     */
-    public List<StudentDetail> findAllStudentDetails() {
-        List<Student> students = studentRepository.findAll();
-        return students.stream()
-                .map(this::buildStudentDetail)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 有効な学生情報のみ取得（一覧のデフォルト表示用）
-     */
-    public List<StudentDetail> findAllActiveStudentDetails() {
-        List<Student> students = studentRepository.findAll().stream()
-                .filter(s -> !s.isDeleted())
-                .collect(Collectors.toList());
-
-        return students.stream()
-                .map(this::buildStudentDetail)
-                .collect(Collectors.toList());
-    }
-
-    public Optional<Student> findById(Integer id) {
-        return Optional.ofNullable(studentRepository.findById(id));
-    }
-
-    public Optional<StudentDetail> findStudentDetailById(Integer id) {
-        return findById(id)
-                .filter(s -> !s.isDeleted()) // 無効なら返さない
-                .map(this::buildStudentDetail);
-    }
-
-    // -------------------- private helpers --------------------
-    private List<StudentsCourses> convertCourseNamesToStudentsCourses(Integer studentId, String courseNames) {
-        List<StudentsCourses> list = new ArrayList<>();
-        if (courseNames != null && !courseNames.isEmpty()) {
-            String[] arr = courseNames.split(",");
-            LocalDate start = LocalDate.now();
-            LocalDate end = start.plusMonths(3);
-            for (String name : arr) {
-                StudentsCourses sc = new StudentsCourses();
-                sc.setStudentId(studentId);
-                sc.setCourseName(name.trim());
-                sc.setCourseStartAt(start);
-                sc.setCourseEndAt(end);
-                list.add(sc);
-            }
-        }
-        return list;
-    }
-
-    private void insertCourses(List<StudentsCourses> courses) {
-        if (courses != null && !courses.isEmpty()) {
-            for (StudentsCourses sc : courses) {
-                studentRepository.insertStudentCourse(
-                        sc.getStudentId(),
-                        sc.getCourseName(),
-                        sc.getCourseStartAt(),
-                        sc.getCourseEndAt()
-                );
-            }
+    public void registerStudent(StudentDetail studentDetail) {
+        repository.registerStudent(studentDetail.getStudent()); // ID 自動採番
+        int studentId = studentDetail.getStudent().getId(); // null になっていないか確認
+        for (StudentsCourses sc : studentDetail.getStudentsCourses()) {
+            sc.setStudentId(studentId);
+            sc.setCourseStartAt(LocalDate.now());
+            sc.setCourseEndAt(LocalDate.now().plusMonths(8));
+            repository.registerStudentsCourses(sc);
         }
     }
 
-    private StudentDetail buildStudentDetail(Student student) {
-        StudentDetail detail = new StudentDetail();
-        detail.setStudent(student);
-
-        List<StudentsCourses> courses = studentRepository.findCoursesByStudentId(student.getId());
-        detail.setStudentsCourses(courses);
-
-        if (courses != null && !courses.isEmpty()) {
-            String courseNames = courses.stream()
-                    .map(StudentsCourses::getCourseName)
-                    .collect(Collectors.joining(","));
-            detail.setCourseNames(courseNames);
-        }
-
-        return detail;
-    }
-
-    /**
-     * 論理削除（無効化）
-     */
+    // -----------------------------
+    // 受講生更新
+    // -----------------------------
     @Transactional
-    public void deleteStudent(Integer studentId) {
-        Student student = studentRepository.findById(studentId);
-        if (student != null && !student.isDeleted()) {
-            student.setDeleted(true);
-            student.setEmail(student.getEmail() + "-deleted-" + student.getId());
-            studentRepository.updateStudent(student);
-        }
-    }
-
-    /**
-     * 論理削除済みを復活（有効化）
-     */
-    @Transactional
-    public void restoreStudent(Integer studentId) {
-        Student student = studentRepository.findById(studentId);
-        if (student != null && student.isDeleted()) {
-            // 復活前に同じメールアドレスの有効レコードがないかチェック
-            String originalEmail = student.getEmail().replaceAll("-deleted-\\d+$", "");
-            List<Student> existing = studentRepository.findByEmailAll(originalEmail);
-
-            if (existing.stream().anyMatch(s -> !s.isDeleted() && !s.getId().equals(studentId))) {
-                // 衝突する場合はユニーク化
-                student.setEmail(originalEmail + "-restored-" + student.getId());
-            } else {
-                student.setEmail(originalEmail);
-            }
-
-            student.setDeleted(false);
-            studentRepository.updateStudent(student);
+    public void updateStudent(StudentDetail studentDetail) {
+        repository.updateStudent(studentDetail.getStudent());
+        for (StudentsCourses course : studentDetail.getStudentsCourses()) {
+            repository.updateStudentsCourses(course);
         }
     }
 }
