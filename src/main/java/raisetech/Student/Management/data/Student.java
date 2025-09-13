@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Setter
 public class Student {
 
-    private Integer id;
+    private long id;
     private String name;
     private String kanaName;
     private String nickname;
@@ -22,10 +22,7 @@ public class Student {
     private String sex;
     private String remark;
 
-    // 削除フラグ（trueなら無効）
     private boolean deleted;
-
-    // コース名リスト（フォームや表示用）
     private List<String> courseNames = new ArrayList<>();
 
     public void setCourseNamesFromString(String courseNamesStr) {
