@@ -1,8 +1,8 @@
 package raisetech.Student.Management.controller;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.service.StudentService;
 
@@ -13,32 +13,42 @@ import java.util.List;
 @RequestMapping("/student")
 public class StudentController {
 
-    private final StudentService service;
+    private final StudentService studentService;
 
-    public StudentController(StudentService service) {
-        this.service = service;
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
     }
 
     @GetMapping("/list")
-    public List<StudentDetail> getAllStudents() {
-        return service.getAllStudents();
+    public List<StudentDetail> listStudents() {
+        return studentService.getAllStudents();
     }
 
     @GetMapping("/{id}")
-    public StudentDetail getStudent(@PathVariable Long id) {
-        return service.searchStudentById(id);
+    public StudentDetail getStudent(@PathVariable("id") Long id) {
+        return studentService.searchStudentById(id);
     }
 
     @PostMapping("/register")
     public ResponseEntity<Void> registerStudent(@RequestBody StudentDetail studentDetail) {
-        service.registerStudent(studentDetail);
+        studentService.registerStudent(studentDetail);
+
         Long createdId = studentDetail.getStudent().getId();
-        return ResponseEntity.created(URI.create("/student/" + createdId)).build();
+        if (createdId == null || createdId <= 0) {
+            throw new IllegalStateException("生成されたIDが不正です");
+        }
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(createdId)
+                .toUri();
+
+        return ResponseEntity.created(location).build();
     }
 
     @PutMapping("/update")
     public ResponseEntity<Void> updateStudent(@RequestBody StudentDetail studentDetail) {
-        service.updateStudent(studentDetail);
+        studentService.updateStudent(studentDetail);
         return ResponseEntity.ok().build();
     }
 }

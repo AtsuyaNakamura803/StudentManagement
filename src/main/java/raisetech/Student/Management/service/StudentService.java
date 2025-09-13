@@ -5,17 +5,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import raisetech.Student.Management.data.Student;
 import raisetech.Student.Management.data.StudentsCourses;
-import raisetech.Student.Management.domain.StudentConverter;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.repository.StudentRepository;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
 
     private static final Logger logger = LoggerFactory.getLogger(StudentService.class);
-
     private final StudentRepository repository;
 
     public StudentService(StudentRepository repository) {
@@ -25,13 +25,17 @@ public class StudentService {
     /**
      * 受講生一覧検索です。
      *
-     * @return 全受講生のリスト
+     * @return 全受講生の詳細リスト
      */
     public List<StudentDetail> getAllStudents() {
         List<Student> students = repository.searchAllStudents();
-        List<StudentsCourses> allCourses = repository.searchAllStudentsCourses();
-
-        return StudentConverter.convertStudentDetails(students, allCourses);
+        List<StudentsCourses> courses = repository.searchAllStudentsCourses();
+        return students.stream()
+                .map(student -> new StudentDetail(student,
+                        courses.stream()
+                                .filter(sc -> Objects.equals(student.getId(), sc.getStudentId()))
+                                .collect(Collectors.toList())))
+                .collect(Collectors.toList());
     }
 
     /**

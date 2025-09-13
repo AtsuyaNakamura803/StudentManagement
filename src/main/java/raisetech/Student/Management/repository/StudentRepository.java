@@ -12,13 +12,10 @@ public interface StudentRepository {
 
     List<Student> searchAllStudents();
     List<StudentsCourses> searchAllStudentsCourses();
-
     Student searchStudent(@Param("id") Long id);
     List<StudentsCourses> searchStudentCourses(@Param("studentId") Long studentId);
-
     int registerStudent(Student student);
     int registerStudentsCourses(StudentsCourses studentsCourses);
-
     int updateStudent(Student student);
     int updateStudentsCourses(StudentsCourses studentsCourses);
 }
