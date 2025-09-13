@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 import raisetech.Student.Management.data.Student;
 import raisetech.Student.Management.data.StudentsCourses;
 import raisetech.Student.Management.domain.StudentDetail;
-import raisetech.Student.Management.domain.StudentConverter;
 import raisetech.Student.Management.repository.StudentRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
@@ -23,7 +23,9 @@ public class StudentService {
     }
 
     /**
-     * 受講生一覧検索
+     * 受講生一覧検索です。
+     *
+     * @return 全受講生の StudentDetail リスト
      */
     public List<StudentDetail> getAllStudents() {
         List<Student> students = repository.searchAllStudents();
@@ -32,7 +34,10 @@ public class StudentService {
     }
 
     /**
-     * 受講生検索
+     * 受講生検索です。
+     *
+     * @param id 受講生ID
+     * @return 該当受講生の詳細
      */
     public StudentDetail searchStudentById(Long id) {
         Student student = repository.searchStudent(id);
@@ -45,7 +50,9 @@ public class StudentService {
     }
 
     /**
-     * 受講生登録
+     * 受講生登録です。
+     *
+     * @param studentDetail 登録対象
      */
     public void registerStudent(StudentDetail studentDetail) {
         studentDetail.validate();
@@ -65,7 +72,9 @@ public class StudentService {
     }
 
     /**
-     * 受講生更新
+     * 受講生更新です。
+     *
+     * @param studentDetail 更新対象
      */
     public void updateStudent(StudentDetail studentDetail) {
         studentDetail.validate();

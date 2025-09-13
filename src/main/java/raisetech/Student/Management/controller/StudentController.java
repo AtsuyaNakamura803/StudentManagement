@@ -23,24 +23,41 @@ public class StudentController {
         this.studentService = studentService;
     }
 
+    /**
+     * 受講生一覧取得
+     *
+     * @return 全受講生のリスト
+     */
     @GetMapping("/list")
-    public ResponseEntity<List<StudentDetail>> getAllStudents() {
-        return ResponseEntity.ok(studentService.getAllStudents());
+    public List<StudentDetail> getAllStudents() {
+        return studentService.getAllStudents();
     }
 
+    /**
+     * 受講生取得
+     *
+     * @param id 受講生ID
+     * @return 該当受講生
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<StudentDetail> getStudent(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(studentService.searchStudentById(id));
+    public StudentDetail getStudent(@PathVariable("id") Long id) {
+        return studentService.searchStudentById(id);
     }
 
+    /**
+     * 受講生登録
+     *
+     * @param studentDetail 登録対象
+     * @return 作成完了レスポンス（Location ヘッダ付き）
+     */
     @PostMapping("/register")
     public ResponseEntity<Void> registerStudent(@RequestBody StudentDetail studentDetail) {
         studentService.registerStudent(studentDetail);
-        Long createdId = studentDetail.getStudent().getId();
 
+        Long createdId = studentDetail.getStudent().getId();
         if (createdId == null || createdId <= 0) {
-            logger.error("登録後のIDが不正です: {}", studentDetail);
-            throw new IllegalStateException("登録後のIDが不正です");
+            logger.error("Invalid created student ID: {}", createdId);
+            throw new IllegalStateException("作成された受講生のIDが無効です");
         }
 
         URI location = ServletUriComponentsBuilder
@@ -52,6 +69,12 @@ public class StudentController {
         return ResponseEntity.created(location).build();
     }
 
+    /**
+     * 受講生更新
+     *
+     * @param studentDetail 更新対象
+     * @return 更新完了レスポンス
+     */
     @PutMapping("/update")
     public ResponseEntity<Void> updateStudent(@RequestBody StudentDetail studentDetail) {
         studentService.updateStudent(studentDetail);

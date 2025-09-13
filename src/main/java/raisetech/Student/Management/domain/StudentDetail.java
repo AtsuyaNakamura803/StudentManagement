@@ -17,13 +17,12 @@ public class StudentDetail {
 
     public void validate() {
         if (student != null) student.validate();
-        if (studentsCourses != null) {
-            for (StudentsCourses sc : studentsCourses) sc.validate();
-        }
+        if (studentsCourses != null) studentsCourses.forEach(StudentsCourses::validate);
     }
 
     public Student getStudent() { return student; }
     public void setStudent(Student student) { this.student = student; }
+
     public List<StudentsCourses> getStudentsCourses() { return studentsCourses; }
     public void setStudentsCourses(List<StudentsCourses> studentsCourses) { this.studentsCourses = studentsCourses; }
 }
