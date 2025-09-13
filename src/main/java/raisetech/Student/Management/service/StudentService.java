@@ -6,16 +6,16 @@ import org.springframework.stereotype.Service;
 import raisetech.Student.Management.data.Student;
 import raisetech.Student.Management.data.StudentsCourses;
 import raisetech.Student.Management.domain.StudentDetail;
+import raisetech.Student.Management.domain.StudentConverter;
 import raisetech.Student.Management.repository.StudentRepository;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
 
     private static final Logger logger = LoggerFactory.getLogger(StudentService.class);
+
     private final StudentRepository repository;
 
     public StudentService(StudentRepository repository) {
@@ -23,26 +23,16 @@ public class StudentService {
     }
 
     /**
-     * 受講生一覧検索です。
-     *
-     * @return 全受講生の詳細リスト
+     * 受講生一覧検索
      */
     public List<StudentDetail> getAllStudents() {
         List<Student> students = repository.searchAllStudents();
         List<StudentsCourses> courses = repository.searchAllStudentsCourses();
-        return students.stream()
-                .map(student -> new StudentDetail(student,
-                        courses.stream()
-                                .filter(sc -> Objects.equals(student.getId(), sc.getStudentId()))
-                                .collect(Collectors.toList())))
-                .collect(Collectors.toList());
+        return StudentConverter.convertStudentDetails(students, courses);
     }
 
     /**
-     * 受講生検索です。
-     *
-     * @param id 受講生ID
-     * @return 該当受講生の詳細
+     * 受講生検索
      */
     public StudentDetail searchStudentById(Long id) {
         Student student = repository.searchStudent(id);
@@ -55,9 +45,7 @@ public class StudentService {
     }
 
     /**
-     * 受講生登録です。
-     *
-     * @param studentDetail 登録対象
+     * 受講生登録
      */
     public void registerStudent(StudentDetail studentDetail) {
         studentDetail.validate();
@@ -77,9 +65,7 @@ public class StudentService {
     }
 
     /**
-     * 受講生更新です。
-     *
-     * @param studentDetail 更新対象
+     * 受講生更新
      */
     public void updateStudent(StudentDetail studentDetail) {
         studentDetail.validate();

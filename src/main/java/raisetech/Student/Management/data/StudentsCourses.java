@@ -4,8 +4,8 @@ import java.time.LocalDate;
 
 public class StudentsCourses {
 
-    private Long id;
-    private Long studentId;
+    private Long id; // Long に統一
+    private Long studentId; // Long に統一
     private String courseName;
     private LocalDate courseStartAt;
     private LocalDate courseEndAt;
@@ -26,4 +26,9 @@ public class StudentsCourses {
     public void setCourseStartAt(LocalDate courseStartAt) { this.courseStartAt = courseStartAt; }
     public LocalDate getCourseEndAt() { return courseEndAt; }
     public void setCourseEndAt(LocalDate courseEndAt) { this.courseEndAt = courseEndAt; }
+
+    @Override
+    public String toString() {
+        return "StudentsCourses{id=" + id + ", studentId=" + studentId + ", courseName='" + courseName + "'}";
+    }
 }

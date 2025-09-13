@@ -4,8 +4,6 @@ import raisetech.Student.Management.data.Student;
 import raisetech.Student.Management.data.StudentsCourses;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class StudentDetail {
 
@@ -17,19 +15,15 @@ public class StudentDetail {
         this.studentsCourses = studentsCourses;
     }
 
-    public Student getStudent() { return student; }
-    public List<StudentsCourses> getStudentsCourses() { return studentsCourses; }
-
     public void validate() {
-        Objects.requireNonNull(student, "Student は必須です");
-        student.validate();
-        if (studentsCourses != null) studentsCourses.forEach(StudentsCourses::validate);
+        if (student != null) student.validate();
+        if (studentsCourses != null) {
+            for (StudentsCourses sc : studentsCourses) sc.validate();
+        }
     }
 
-    public String getCourseNamesAsString() {
-        if (studentsCourses == null || studentsCourses.isEmpty()) return "";
-        return studentsCourses.stream()
-                .map(StudentsCourses::getCourseName)
-                .collect(Collectors.joining(", "));
-    }
+    public Student getStudent() { return student; }
+    public void setStudent(Student student) { this.student = student; }
+    public List<StudentsCourses> getStudentsCourses() { return studentsCourses; }
+    public void setStudentsCourses(List<StudentsCourses> studentsCourses) { this.studentsCourses = studentsCourses; }
 }

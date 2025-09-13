@@ -1,5 +1,7 @@
 package raisetech.Student.Management.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -13,6 +15,8 @@ import java.util.List;
 @RequestMapping("/student")
 public class StudentController {
 
+    private static final Logger logger = LoggerFactory.getLogger(StudentController.class);
+
     private final StudentService studentService;
 
     public StudentController(StudentService studentService) {
@@ -20,26 +24,28 @@ public class StudentController {
     }
 
     @GetMapping("/list")
-    public List<StudentDetail> listStudents() {
-        return studentService.getAllStudents();
+    public ResponseEntity<List<StudentDetail>> getAllStudents() {
+        return ResponseEntity.ok(studentService.getAllStudents());
     }
 
     @GetMapping("/{id}")
-    public StudentDetail getStudent(@PathVariable("id") Long id) {
-        return studentService.searchStudentById(id);
+    public ResponseEntity<StudentDetail> getStudent(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(studentService.searchStudentById(id));
     }
 
     @PostMapping("/register")
     public ResponseEntity<Void> registerStudent(@RequestBody StudentDetail studentDetail) {
         studentService.registerStudent(studentDetail);
-
         Long createdId = studentDetail.getStudent().getId();
+
         if (createdId == null || createdId <= 0) {
-            throw new IllegalStateException("生成されたIDが不正です");
+            logger.error("登録後のIDが不正です: {}", studentDetail);
+            throw new IllegalStateException("登録後のIDが不正です");
         }
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/student/{id}")
                 .buildAndExpand(createdId)
                 .toUri();
 
@@ -49,6 +55,6 @@ public class StudentController {
     @PutMapping("/update")
     public ResponseEntity<Void> updateStudent(@RequestBody StudentDetail studentDetail) {
         studentService.updateStudent(studentDetail);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }
