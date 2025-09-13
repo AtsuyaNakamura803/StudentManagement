@@ -3,26 +3,71 @@ package raisetech.Student.Management.domain;
 import raisetech.Student.Management.data.Student;
 import raisetech.Student.Management.data.StudentsCourses;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+/**
+ * 受講生の詳細情報を保持するドメインクラスです。
+ * 学生基本情報（Student）と履修コース情報（StudentsCourses）の両方をまとめて扱います。
+ */
 public class StudentDetail {
 
     private Student student;
-    private List<StudentsCourses> studentsCourses;
+    private List<StudentsCourses> courses = new ArrayList<>();
 
-    public StudentDetail(Student student, List<StudentsCourses> studentsCourses) {
+    public StudentDetail() {}
+
+    public StudentDetail(Student student, List<StudentsCourses> courses) {
         this.student = student;
-        this.studentsCourses = studentsCourses;
+        if (courses != null) {
+            this.courses = courses;
+        }
+    }
+
+    public Student getStudent() {
+        return student;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
+    }
+
+    public List<StudentsCourses> getCourses() {
+        return courses;
+    }
+
+    public void setCourses(List<StudentsCourses> courses) {
+        if (courses != null) {
+            this.courses = courses;
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof StudentDetail)) return false;
+        StudentDetail that = (StudentDetail) o;
+        return Objects.equals(student, that.student) &&
+                Objects.equals(courses, that.courses);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(student, courses);
+    }
+
+    @Override
+    public String toString() {
+        return "StudentDetail{" +
+                "student=" + student +
+                ", courses=" + courses +
+                '}';
     }
 
     public void validate() {
-        if (student != null) student.validate();
-        if (studentsCourses != null) studentsCourses.forEach(StudentsCourses::validate);
+        if (student == null) {
+            throw new IllegalArgumentException("Student information must not be null");
+        }
     }
-
-    public Student getStudent() { return student; }
-    public void setStudent(Student student) { this.student = student; }
-
-    public List<StudentsCourses> getStudentsCourses() { return studentsCourses; }
-    public void setStudentsCourses(List<StudentsCourses> studentsCourses) { this.studentsCourses = studentsCourses; }
 }

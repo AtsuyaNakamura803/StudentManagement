@@ -11,6 +11,9 @@ import raisetech.Student.Management.service.StudentService;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * 学生に関する REST API を提供するコントローラーです。
+ */
 @RestController
 @RequestMapping("/student")
 public class StudentController {
@@ -24,23 +27,25 @@ public class StudentController {
     }
 
     /**
-     * 受講生一覧取得
+     * 受講生一覧検索
      *
-     * @return 全受講生のリスト
+     * @return 全受講生の詳細リスト
      */
     @GetMapping("/list")
     public List<StudentDetail> getAllStudents() {
+        logger.info("Fetching all students");
         return studentService.getAllStudents();
     }
 
     /**
-     * 受講生取得
+     * 受講生検索
      *
      * @param id 受講生ID
-     * @return 該当受講生
+     * @return 該当受講生の詳細
      */
     @GetMapping("/{id}")
     public StudentDetail getStudent(@PathVariable("id") Long id) {
+        logger.info("Fetching student by id={}", id);
         return studentService.searchStudentById(id);
     }
 
@@ -48,24 +53,24 @@ public class StudentController {
      * 受講生登録
      *
      * @param studentDetail 登録対象
-     * @return 作成完了レスポンス（Location ヘッダ付き）
+     * @return Location ヘッダ付きレスポンス
      */
     @PostMapping("/register")
     public ResponseEntity<Void> registerStudent(@RequestBody StudentDetail studentDetail) {
         studentService.registerStudent(studentDetail);
-
         Long createdId = studentDetail.getStudent().getId();
+
         if (createdId == null || createdId <= 0) {
-            logger.error("Invalid created student ID: {}", createdId);
-            throw new IllegalStateException("作成された受講生のIDが無効です");
+            logger.error("Failed to retrieve created student id after registration");
+            throw new IllegalStateException("登録後に受講生IDが取得できませんでした");
         }
 
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentContextPath()
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/student/{id}")
                 .buildAndExpand(createdId)
                 .toUri();
 
+        logger.info("Student registered with id={}, Location={}", createdId, location);
         return ResponseEntity.created(location).build();
     }
 
@@ -78,6 +83,7 @@ public class StudentController {
     @PutMapping("/update")
     public ResponseEntity<Void> updateStudent(@RequestBody StudentDetail studentDetail) {
         studentService.updateStudent(studentDetail);
+        logger.info("Student updated successfully: id={}", studentDetail.getStudent().getId());
         return ResponseEntity.noContent().build();
     }
 }

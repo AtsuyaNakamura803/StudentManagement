@@ -11,6 +11,9 @@ import raisetech.Student.Management.repository.StudentRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 学生関連のビジネスロジックを提供するサービス。
+ */
 @Service
 public class StudentService {
 
@@ -25,12 +28,13 @@ public class StudentService {
     /**
      * 受講生一覧検索です。
      *
-     * @return 全受講生の StudentDetail リスト
+     * @return 全受講生のリスト
      */
     public List<StudentDetail> getAllStudents() {
         List<Student> students = repository.searchAllStudents();
-        List<StudentsCourses> courses = repository.searchAllStudentsCourses();
-        return StudentConverter.convertStudentDetails(students, courses);
+        return students.stream()
+                .map(s -> new StudentDetail(s, repository.searchStudentCourses(s.getId())))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -63,7 +67,7 @@ public class StudentService {
             throw new IllegalStateException("受講生登録に失敗しました");
         }
 
-        for (StudentsCourses sc : studentDetail.getStudentsCourses()) {
+        for (StudentsCourses sc : studentDetail.getCourses()) {
             sc.setStudentId(studentDetail.getStudent().getId());
             repository.registerStudentsCourses(sc);
         }
@@ -81,7 +85,7 @@ public class StudentService {
 
         repository.updateStudent(studentDetail.getStudent());
 
-        for (StudentsCourses sc : studentDetail.getStudentsCourses()) {
+        for (StudentsCourses sc : studentDetail.getCourses()) {
             if (sc.getId() == null) {
                 sc.setStudentId(studentDetail.getStudent().getId());
                 repository.registerStudentsCourses(sc);

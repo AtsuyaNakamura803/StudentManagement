@@ -1,39 +1,62 @@
 package raisetech.Student.Management.data;
 
-import java.time.LocalDate;
+import java.util.Objects;
 
+/**
+ * 学生とコースの関連を表すクラスです。
+ */
 public class StudentsCourses {
 
     private Long id;
     private Long studentId;
     private String courseName;
-    private LocalDate courseStartAt;
-    private LocalDate courseEndAt;
 
-    public void validate() {
-        if (courseName == null || courseName.isBlank())
-            throw new IllegalArgumentException("コース名は必須です");
-        if (courseStartAt == null)
-            throw new IllegalArgumentException("開始日は必須です");
-        if (courseEndAt == null)
-            throw new IllegalArgumentException("終了日は必須です");
+    public StudentsCourses() {}
+
+    public StudentsCourses(Long id, Long studentId, String courseName) {
+        this.id = id;
+        this.studentId = studentId;
+        this.courseName = courseName;
     }
 
-    // Getter / Setter
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Long getStudentId() { return studentId; }
-    public void setStudentId(Long studentId) { this.studentId = studentId; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getCourseName() { return courseName; }
-    public void setCourseName(String courseName) { this.courseName = courseName; }
+    public Long getStudentId() {
+        return studentId;
+    }
 
-    public LocalDate getCourseStartAt() { return courseStartAt; }
-    public void setCourseStartAt(LocalDate courseStartAt) { this.courseStartAt = courseStartAt; }
+    public void setStudentId(Long studentId) {
+        this.studentId = studentId;
+    }
 
-    public LocalDate getCourseEndAt() { return courseEndAt; }
-    public void setCourseEndAt(LocalDate courseEndAt) { this.courseEndAt = courseEndAt; }
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof StudentsCourses)) return false;
+        StudentsCourses that = (StudentsCourses) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(studentId, that.studentId) &&
+                Objects.equals(courseName, that.courseName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, studentId, courseName);
+    }
 
     @Override
     public String toString() {
@@ -41,8 +64,6 @@ public class StudentsCourses {
                 "id=" + id +
                 ", studentId=" + studentId +
                 ", courseName='" + courseName + '\'' +
-                ", courseStartAt=" + courseStartAt +
-                ", courseEndAt=" + courseEndAt +
                 '}';
     }
 }
