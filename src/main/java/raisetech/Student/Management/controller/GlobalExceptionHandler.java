@@ -15,10 +15,7 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     /**
-     * ResponseStatusException をハンドリングします。
-     *
-     * @param ex ResponseStatusException
-     * @return JSON形式のエラーレスポンス
+     * ResponseStatusException をハンドリング
      */
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {
@@ -29,10 +26,8 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * バリデーションエラーをハンドリングします。
-     *
-     * @param ex MethodArgumentNotValidException
-     * @return JSON形式のエラーレスポンス
+     * MethodArgumentNotValidException をハンドリング
+     * Spring の @Valid アノテーションによるバリデーションエラー用
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
@@ -45,17 +40,26 @@ public class GlobalExceptionHandler {
                         error -> error.getDefaultMessage()
                 ));
 
-        body.put("message", "入力値が不正です。");
+        body.put("message", "入力値が不正です");
         body.put("validationErrors", fieldErrors);
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     /**
-     * その他の例外をハンドリングします。
-     *
-     * @param ex Exception
-     * @return JSON形式のエラーレスポンス
+     * IllegalArgumentException をハンドリング
+     * Student/StudentsCourses/StudentDetail の validate() で投げられる例外
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * その他の例外をハンドリング（500 INTERNAL_SERVER_ERROR）
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleException(Exception ex) {

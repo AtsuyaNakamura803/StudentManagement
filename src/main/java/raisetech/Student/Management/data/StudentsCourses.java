@@ -4,8 +4,8 @@ import java.time.LocalDate;
 
 public class StudentsCourses {
 
-    private long id;
-    private long studentId;
+    private Long id;            // 修正: long → Long
+    private Long studentId;     // 修正: long → Long
     private String courseName;
     private LocalDate courseStartAt;
     private LocalDate courseEndAt;
@@ -24,11 +24,11 @@ public class StudentsCourses {
     }
 
     // Getter / Setter
-    public long getId() { return id; }
-    public void setId(long id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public long getStudentId() { return studentId; }
-    public void setStudentId(long studentId) { this.studentId = studentId; }
+    public Long getStudentId() { return studentId; }
+    public void setStudentId(Long studentId) { this.studentId = studentId; }
 
     public String getCourseName() { return courseName; }
     public void setCourseName(String courseName) { this.courseName = courseName; }
