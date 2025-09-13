@@ -5,11 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import raisetech.Student.Management.data.Student;
 import raisetech.Student.Management.data.StudentsCourses;
+import raisetech.Student.Management.domain.StudentConverter;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.repository.StudentRepository;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
@@ -23,22 +23,22 @@ public class StudentService {
     }
 
     /**
-     * 受講生一覧取得
+     * 受講生一覧検索です。
      *
-     * @return 受講生詳細リスト
+     * @return 全受講生のリスト
      */
     public List<StudentDetail> getAllStudents() {
         List<Student> students = repository.searchAllStudents();
-        return students.stream()
-                .map(s -> new StudentDetail(s, repository.searchStudentCourses(s.getId())))
-                .collect(Collectors.toList());
+        List<StudentsCourses> allCourses = repository.searchAllStudentsCourses();
+
+        return StudentConverter.convertStudentDetails(students, allCourses);
     }
 
     /**
-     * 受講生検索
+     * 受講生検索です。
      *
      * @param id 受講生ID
-     * @return 該当受講生詳細
+     * @return 該当受講生の詳細
      */
     public StudentDetail searchStudentById(Long id) {
         Student student = repository.searchStudent(id);
@@ -51,21 +51,19 @@ public class StudentService {
     }
 
     /**
-     * 受講生登録
+     * 受講生登録です。
      *
      * @param studentDetail 登録対象
      */
     public void registerStudent(StudentDetail studentDetail) {
-        studentDetail.validate(); // 入力検証
+        studentDetail.validate();
 
-        // Student 登録
         int count = repository.registerStudent(studentDetail.getStudent());
-        if (count == 0) {
+        if (count == 0 || studentDetail.getStudent().getId() == null) {
             logger.error("Student insert failed: {}", studentDetail.getStudent());
             throw new IllegalStateException("受講生登録に失敗しました");
         }
 
-        // StudentsCourses 登録
         for (StudentsCourses sc : studentDetail.getStudentsCourses()) {
             sc.setStudentId(studentDetail.getStudent().getId());
             repository.registerStudentsCourses(sc);
@@ -75,19 +73,17 @@ public class StudentService {
     }
 
     /**
-     * 受講生更新
+     * 受講生更新です。
      *
      * @param studentDetail 更新対象
      */
     public void updateStudent(StudentDetail studentDetail) {
         studentDetail.validate();
 
-        // Student 更新
         repository.updateStudent(studentDetail.getStudent());
 
-        // StudentsCourses 更新／追加
         for (StudentsCourses sc : studentDetail.getStudentsCourses()) {
-            if (sc.getId() == null) { // Long 型なら null 判定が可能
+            if (sc.getId() == null) {
                 sc.setStudentId(studentDetail.getStudent().getId());
                 repository.registerStudentsCourses(sc);
             } else {

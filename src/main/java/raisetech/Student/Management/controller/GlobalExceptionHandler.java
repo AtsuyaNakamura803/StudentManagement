@@ -1,71 +1,63 @@
 package raisetech.Student.Management.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-@RestControllerAdvice
+@ControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     /**
-     * ResponseStatusException をハンドリング
+     * 入力不正などの例外をハンドリングします。
+     *
+     * @param ex IllegalArgumentException
+     * @return エラーレスポンス
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        logger.warn("Bad request: {}", ex.getMessage());
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("message", ex.getMessage() != null ? ex.getMessage() : "不正なリクエストです");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    /**
+     * ResponseStatusException をハンドリングします。
+     *
+     * @param ex ResponseStatusException
+     * @return エラーレスポンス
      */
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {
+        logger.warn("ResponseStatusException: {}", ex.getReason(), ex);
         Map<String, Object> body = new HashMap<>();
         body.put("status", ex.getStatusCode().value());
-        body.put("message", ex.getReason());
-        return new ResponseEntity<>(body, ex.getStatusCode());
+        body.put("message", ex.getReason() != null ? ex.getReason() : "エラーが発生しました");
+        return ResponseEntity.status(ex.getStatusCode()).body(body);
     }
 
     /**
-     * MethodArgumentNotValidException をハンドリング
-     * Spring の @Valid アノテーションによるバリデーションエラー用
-     */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-
-        Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
-                .collect(Collectors.toMap(
-                        error -> error.getField(),
-                        error -> error.getDefaultMessage()
-                ));
-
-        body.put("message", "入力値が不正です");
-        body.put("validationErrors", fieldErrors);
-
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * IllegalArgumentException をハンドリング
-     * Student/StudentsCourses/StudentDetail の validate() で投げられる例外
-     */
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * その他の例外をハンドリング（500 INTERNAL_SERVER_ERROR）
+     * その他の例外をハンドリングします。
+     *
+     * @param ex Exception
+     * @return エラーレスポンス
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleException(Exception ex) {
+        logger.error("Internal server error", ex);
         Map<String, Object> body = new HashMap<>();
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+        body.put("message", "サーバー内部でエラーが発生しました");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 }
