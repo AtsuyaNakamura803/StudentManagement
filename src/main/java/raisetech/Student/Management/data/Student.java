@@ -16,10 +16,27 @@ public class Student {
     private Integer age;
     private String sex;
     private String remark;
-
     private boolean deleted;
     private List<String> courseNames = new ArrayList<>();
 
+    /**
+     * 入力値を検証します。
+     * 必須項目が空の場合は IllegalArgumentException を投げます。
+     */
+    public void validate() {
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("名前は必須です");
+        if (kanaName == null || kanaName.isBlank()) throw new IllegalArgumentException("カナ名前は必須です");
+        if (email == null || email.isBlank()) throw new IllegalArgumentException("メールアドレスは必須です");
+        if (age != null && age < 0) throw new IllegalArgumentException("年齢は0以上である必要があります");
+        if (email != null && !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
+            throw new IllegalArgumentException("メールアドレスの形式が不正です");
+    }
+
+    /**
+     * コース文字列をリストに変換します。
+     *
+     * @param courseNamesStr コース名カンマ区切り
+     */
     public void setCourseNamesFromString(String courseNamesStr) {
         if (courseNamesStr != null && !courseNamesStr.trim().isEmpty()) {
             this.courseNames = Arrays.stream(courseNamesStr.split(","))
@@ -31,21 +48,33 @@ public class Student {
         }
     }
 
+    /**
+     * コースリストを文字列に変換します。
+     *
+     * @return カンマ区切りコース名
+     */
     public String getCourseNamesAsString() {
         return String.join(",", this.courseNames);
     }
 
-    public void markDeleted() {
-        this.deleted = true;
-    }
+    /**
+     * 削除フラグを立てます。
+     */
+    public void markDeleted() { this.deleted = true; }
 
-    public boolean isDeleted() {
-        return this.deleted;
-    }
+    /**
+     * 削除済みか判定します。
+     *
+     * @return true: 削除済み
+     */
+    public boolean isDeleted() { return this.deleted; }
 
-    public boolean isActive() {
-        return !this.deleted;
-    }
+    /**
+     * アクティブか判定します。
+     *
+     * @return true: 有効
+     */
+    public boolean isActive() { return !this.deleted; }
 
     // Getter / Setter
     public long getId() { return id; }

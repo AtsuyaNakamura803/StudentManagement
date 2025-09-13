@@ -10,6 +10,19 @@ public class StudentsCourses {
     private LocalDate courseStartAt;
     private LocalDate courseEndAt;
 
+    /**
+     * 入力値を検証します。
+     * 必須項目が空の場合は IllegalArgumentException を投げます。
+     */
+    public void validate() {
+        if (courseName == null || courseName.isBlank())
+            throw new IllegalArgumentException("コース名は必須です");
+        if (courseStartAt == null)
+            throw new IllegalArgumentException("開始日は必須です");
+        if (courseEndAt == null)
+            throw new IllegalArgumentException("終了日は必須です");
+    }
+
     // Getter / Setter
     public long getId() { return id; }
     public void setId(long id) { this.id = id; }

@@ -28,6 +28,19 @@ public class StudentDetail {
     public List<StudentsCourses> getStudentsCourses() { return studentsCourses; }
     public void setStudentsCourses(List<StudentsCourses> studentsCourses) { this.studentsCourses = studentsCourses; }
 
+    /**
+     * 入力値を検証します。
+     * 必須項目が空の場合は IllegalArgumentException を投げます。
+     */
+    public void validate() {
+        student.validate();
+        if (studentsCourses != null) {
+            for (StudentsCourses sc : studentsCourses) {
+                sc.validate();
+            }
+        }
+    }
+
     @Override
     public String toString() {
         return "StudentDetail{" +
