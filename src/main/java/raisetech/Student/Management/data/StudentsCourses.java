@@ -13,10 +13,4 @@ public class StudentsCourses {
     private String courseName;
     private LocalDate courseStartAt;
     private LocalDate courseEndAt;
-
-    public StudentsCourses() {} // デフォルトコンストラクタ
-
-    public StudentsCourses(String courseName) { // コントローラー用
-        this.courseName = courseName;
-    }
 }
