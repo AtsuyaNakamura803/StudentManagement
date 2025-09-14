@@ -1,61 +1,61 @@
 package raisetech.Student.Management.data;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Objects;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-@Getter
-@Setter
+/**
+ * 受講生の基本情報を保持するクラスです。
+ */
 public class Student {
 
-    private Integer id;
+    private Long id;
     private String name;
-    private String kanaName;
-    private String nickname;
-    private String email;
-    private String area;
     private Integer age;
-    private String sex;
-    private String remark;
 
-    // 削除フラグ（trueなら無効）
-    private boolean deleted;
+    public Student() {}
 
-    // コース名リスト（フォームや表示用）
-    private List<String> courseNames = new ArrayList<>();
-
-    public void setCourseNamesFromString(String courseNamesStr) {
-        if (courseNamesStr != null && !courseNamesStr.trim().isEmpty()) {
-            this.courseNames = Arrays.stream(courseNamesStr.split(","))
-                    .map(String::trim)
-                    .filter(s -> !s.isEmpty())
-                    .collect(Collectors.toList());
-        } else {
-            this.courseNames = new ArrayList<>();
-        }
+    public Student(Long id, String name, Integer age) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
     }
 
-    public String getCourseNamesAsString() {
-        return String.join(",", this.courseNames);
+    public Long getId() {
+        return id;
     }
 
-    /** 論理削除マークをつける */
-    public void markDeleted() {
-        this.deleted = true;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    /** 削除状態を返す */
-    public boolean isDeleted() {
-        return this.deleted;
+    public String getName() {
+        return name;
     }
 
-    /** 有効状態を返す（deleted の反転） */
-    public boolean isActive() {
-        return !this.deleted;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Student)) return false;
+        Student student = (Student) o;
+        return Objects.equals(id, student.id) &&
+                Objects.equals(name, student.name) &&
+                Objects.equals(age, student.age);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, age);
     }
 
     @Override
@@ -63,15 +63,7 @@ public class Student {
         return "Student{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", kanaName='" + kanaName + '\'' +
-                ", nickname='" + nickname + '\'' +
-                ", email='" + email + '\'' +
-                ", area='" + area + '\'' +
                 ", age=" + age +
-                ", sex='" + sex + '\'' +
-                ", remark='" + remark + '\'' +
-                ", deleted=" + deleted +
-                ", courseNames=" + courseNames +
                 '}';
     }
 }
