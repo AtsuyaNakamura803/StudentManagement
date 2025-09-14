@@ -1,5 +1,6 @@
 package raisetech.Student.Management.data;
 
+import jakarta.validation.constraints.Min;
 import java.util.Objects;
 
 /**
@@ -10,13 +11,15 @@ public class Student {
     private Long id;
     private String name;
     private Integer age;
+    private Boolean isDeleted; // 論理削除フラグ
 
     public Student() {}
 
-    public Student(Long id, String name, Integer age) {
+    public Student(Long id, String name, Integer age, Boolean isDeleted) {
         this.id = id;
         this.name = name;
         this.age = age;
+        this.isDeleted = isDeleted;
     }
 
     public Long getId() {
@@ -43,6 +46,14 @@ public class Student {
         this.age = age;
     }
 
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -50,12 +61,13 @@ public class Student {
         Student student = (Student) o;
         return Objects.equals(id, student.id) &&
                 Objects.equals(name, student.name) &&
-                Objects.equals(age, student.age);
+                Objects.equals(age, student.age) &&
+                Objects.equals(isDeleted, student.isDeleted);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, age);
+        return Objects.hash(id, name, age, isDeleted);
     }
 
     @Override
@@ -64,6 +76,7 @@ public class Student {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", age=" + age +
+                ", isDeleted=" + isDeleted +
                 '}';
     }
 }

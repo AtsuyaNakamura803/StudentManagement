@@ -1,7 +1,7 @@
 package raisetech.Student.Management.controller.converter;
 
 import raisetech.Student.Management.data.Student;
-import raisetech.Student.Management.data.StudentsCourses;
+import raisetech.Student.Management.data.StudentCourse;
 import raisetech.Student.Management.domain.StudentDetail;
 
 import java.util.List;
@@ -13,10 +13,10 @@ import java.util.stream.Collectors;
  */
 public class StudentConverter {
 
-    public static List<StudentDetail> convertStudentDetails(List<Student> students, List<StudentsCourses> courses) {
+    public static List<StudentDetail> convertStudentDetails(List<Student> students, List<StudentCourse> courses) {
         return students.stream()
                 .map(student -> {
-                    List<StudentsCourses> studentCourses = courses.stream()
+                    List<StudentCourse> studentCourses = courses.stream()
                             .filter(sc -> Objects.equals(student.getId(), sc.getStudentId()))
                             .collect(Collectors.toList());
                     return new StudentDetail(student, studentCourses);

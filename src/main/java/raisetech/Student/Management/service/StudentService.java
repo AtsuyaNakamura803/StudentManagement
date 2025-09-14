@@ -4,11 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import raisetech.Student.Management.data.Student;
-import raisetech.Student.Management.data.StudentsCourses;
+import raisetech.Student.Management.data.StudentCourse;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.repository.StudentRepository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -25,39 +27,23 @@ public class StudentService {
         this.repository = repository;
     }
 
-    /**
-     * 受講生一覧検索です。
-     *
-     * @return 全受講生のリスト
-     */
     public List<StudentDetail> getAllStudents() {
         List<Student> students = repository.searchAllStudents();
         return students.stream()
-                .map(s -> new StudentDetail(s, repository.searchStudentCourses(s.getId())))
+                .map(s -> new StudentDetail(s, repository.searchStudentCourse(s.getId())))
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 受講生検索です。
-     *
-     * @param id 受講生ID
-     * @return 該当受講生の詳細
-     */
     public StudentDetail searchStudentById(Long id) {
         Student student = repository.searchStudent(id);
         if (student == null) {
             logger.warn("Student not found: id={}", id);
             throw new IllegalArgumentException("指定された受講生が存在しません");
         }
-        List<StudentsCourses> courses = repository.searchStudentCourses(id);
+        List<StudentCourse> courses = repository.searchStudentCourse(id);
         return new StudentDetail(student, courses);
     }
 
-    /**
-     * 受講生登録です。
-     *
-     * @param studentDetail 登録対象
-     */
     public void registerStudent(StudentDetail studentDetail) {
         studentDetail.validate();
 
@@ -67,33 +53,59 @@ public class StudentService {
             throw new IllegalStateException("受講生登録に失敗しました");
         }
 
-        for (StudentsCourses sc : studentDetail.getCourses()) {
+        for (StudentCourse sc : studentDetail.getCourses()) {
             sc.setStudentId(studentDetail.getStudent().getId());
-            repository.registerStudentsCourses(sc);
+            repository.registerStudentCourse(sc);
         }
 
         logger.info("Student registered successfully: id={}", studentDetail.getStudent().getId());
     }
 
-    /**
-     * 受講生更新です。
-     *
-     * @param studentDetail 更新対象
-     */
     public void updateStudent(StudentDetail studentDetail) {
         studentDetail.validate();
 
         repository.updateStudent(studentDetail.getStudent());
 
-        for (StudentsCourses sc : studentDetail.getCourses()) {
+        for (StudentCourse sc : studentDetail.getCourses()) {
             if (sc.getId() == null) {
                 sc.setStudentId(studentDetail.getStudent().getId());
-                repository.registerStudentsCourses(sc);
+                repository.registerStudentCourse(sc);
             } else {
-                repository.updateStudentsCourses(sc);
+                repository.updateStudentCourse(sc);
             }
         }
 
         logger.info("Student updated successfully: id={}", studentDetail.getStudent().getId());
+    }
+
+    /**
+     * 学生と紐づくコースを論理削除します。
+     *
+     * @param id 学生ID
+     * @return 削除結果情報
+     */
+    public Map<String, Object> deleteStudent(Long id) {
+        Student student = repository.searchStudent(id);
+        if (student == null || Boolean.TRUE.equals(student.getIsDeleted())) {
+            logger.warn("Student not found or already deleted: id={}", id);
+            throw new IllegalArgumentException("指定された受講生が存在しません");
+        }
+
+        int studentCount = repository.deleteStudent(id);
+        int courseCount = repository.deleteStudentCourses(id);
+
+        if (studentCount == 0) {
+            logger.error("Failed to delete student: id={}", id);
+            throw new IllegalStateException("受講生の削除に失敗しました");
+        }
+
+        logger.info("Student logically deleted: id={}, coursesDeleted={}", id, courseCount);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("studentId", id);
+        result.put("studentDeleted", studentCount);
+        result.put("coursesDeleted", courseCount);
+
+        return result;
     }
 }

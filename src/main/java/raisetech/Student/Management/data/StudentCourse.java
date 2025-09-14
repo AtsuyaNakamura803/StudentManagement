@@ -5,18 +5,20 @@ import java.util.Objects;
 /**
  * 学生とコースの関連を表すクラスです。
  */
-public class StudentsCourses {
+public class StudentCourse {
 
     private Long id;
     private Long studentId;
     private String courseName;
+    private Boolean isDeleted; // 論理削除フラグ
 
-    public StudentsCourses() {}
+    public StudentCourse() {}
 
-    public StudentsCourses(Long id, Long studentId, String courseName) {
+    public StudentCourse(Long id, Long studentId, String courseName, Boolean isDeleted) {
         this.id = id;
         this.studentId = studentId;
         this.courseName = courseName;
+        this.isDeleted = isDeleted;
     }
 
     public Long getId() {
@@ -43,27 +45,37 @@ public class StudentsCourses {
         this.courseName = courseName;
     }
 
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof StudentsCourses)) return false;
-        StudentsCourses that = (StudentsCourses) o;
+        if (!(o instanceof StudentCourse)) return false;
+        StudentCourse that = (StudentCourse) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(studentId, that.studentId) &&
-                Objects.equals(courseName, that.courseName);
+                Objects.equals(courseName, that.courseName) &&
+                Objects.equals(isDeleted, that.isDeleted);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, studentId, courseName);
+        return Objects.hash(id, studentId, courseName, isDeleted);
     }
 
     @Override
     public String toString() {
-        return "StudentsCourses{" +
+        return "StudentCourse{" +
                 "id=" + id +
                 ", studentId=" + studentId +
                 ", courseName='" + courseName + '\'' +
+                ", isDeleted=" + isDeleted +
                 '}';
     }
 }

@@ -1,7 +1,7 @@
 package raisetech.Student.Management.domain;
 
 import raisetech.Student.Management.data.Student;
-import raisetech.Student.Management.data.StudentsCourses;
+import raisetech.Student.Management.data.StudentCourse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,16 +9,16 @@ import java.util.Objects;
 
 /**
  * 受講生の詳細情報を保持するドメインクラスです。
- * 学生基本情報（Student）と履修コース情報（StudentsCourses）の両方をまとめて扱います。
+ * 学生基本情報（Student）と履修コース情報（StudentCourse）の両方をまとめて扱います。
  */
 public class StudentDetail {
 
     private Student student;
-    private List<StudentsCourses> courses = new ArrayList<>();
+    private List<StudentCourse> courses = new ArrayList<>();
 
     public StudentDetail() {}
 
-    public StudentDetail(Student student, List<StudentsCourses> courses) {
+    public StudentDetail(Student student, List<StudentCourse> courses) {
         this.student = student;
         if (courses != null) {
             this.courses = courses;
@@ -33,11 +33,11 @@ public class StudentDetail {
         this.student = student;
     }
 
-    public List<StudentsCourses> getCourses() {
+    public List<StudentCourse> getCourses() {
         return courses;
     }
 
-    public void setCourses(List<StudentsCourses> courses) {
+    public void setCourses(List<StudentCourse> courses) {
         if (courses != null) {
             this.courses = courses;
         }

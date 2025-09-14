@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="raisetech.Student.Management.repository.StudentRepository">
+
+    <!-- 受講生の全件検索 -->
+    <select id="searchAllStudents" resultType="raisetech.Student.Management.data.Student">
+        SELECT id, name, age, is_deleted
+        FROM students
+        WHERE is_deleted = FALSE
+    </select>
+
+    <!-- 全コース一覧 -->
+    <select id="searchAllStudentCourseList" resultType="raisetech.Student.Management.data.StudentCourse">
+        SELECT id, student_id, course_name, is_deleted
+        FROM students_courses
+        WHERE is_deleted = FALSE
+    </select>
+
+    <!-- 学生1件検索 -->
+    <select id="searchStudent" parameterType="long" resultType="raisetech.Student.Management.data.Student">
+        SELECT id, name, age, is_deleted
+        FROM students
+        WHERE id = #{id}
+    </select>
+
+    <!-- 学生に紐づくコース検索 -->
+    <select id="searchStudentCourse" parameterType="long" resultType="raisetech.Student.Management.data.StudentCourse">
+        SELECT id, student_id, course_name, is_deleted
+        FROM students_courses
+        WHERE student_id = #{studentId} AND is_deleted = FALSE
+    </select>
+
+    <!-- 学生登録 -->
+    <insert id="registerStudent" parameterType="raisetech.Student.Management.data.Student" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO students (name, age)
+        VALUES (#{name}, #{age})
+    </insert>
+
+    <!-- コース登録 -->
+    <insert id="registerStudentCourse" parameterType="raisetech.Student.Management.data.StudentCourse" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO students_courses (student_id, course_name)
+        VALUES (#{studentId}, #{courseName})
+    </insert>
+
+    <!-- 学生更新 -->
+    <update id="updateStudent" parameterType="raisetech.Student.Management.data.Student">
+        UPDATE students
+        SET name = #{name}, age = #{age}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <!-- コース更新 -->
+    <update id="updateStudentCourse" parameterType="raisetech.Student.Management.data.StudentCourse">
+        UPDATE students_courses
+        SET course_name = #{courseName}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <!-- 学生論理削除 -->
+    <update id="deleteStudent" parameterType="long">
+        UPDATE students
+        SET is_deleted = TRUE,
+        updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <!-- 学生に紐づくコース論理削除 -->
+    <update id="deleteStudentCourses" parameterType="long">
+        UPDATE students_courses
+        SET is_deleted = TRUE,
+        updated_at = CURRENT_TIMESTAMP
+        WHERE student_id = #{studentId}
+    </update>
+
+    <!-- 将来用：特定コース削除 -->
+    <update id="deleteStudentCourse" parameterType="long">
+        UPDATE students_courses
+        SET is_deleted = TRUE,
+        updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{courseId}
+    </update>
+
+    <!-- 将来用：特定コース検索 -->
+    <select id="searchStudentCourseById" parameterType="long" resultType="raisetech.Student.Management.data.StudentCourse">
+        SELECT id, student_id, course_name, is_deleted
+        FROM students_courses
+        WHERE id = #{courseId}
+    </select>
+
+</mapper>
