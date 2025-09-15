@@ -1,6 +1,8 @@
 package raisetech.Student.Management.data;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.Objects;
 
 /**
@@ -9,7 +11,12 @@ import java.util.Objects;
 public class Student {
 
     private Long id;
+
+    @NotBlank(message="名前は必須です")
     private String name;
+
+    @NotNull(message="年齢は必須です")
+    @Min(value=0, message="年齢は0以上でなければなりません")
     private Integer age;
     private Boolean isDeleted; // 論理削除フラグ
 

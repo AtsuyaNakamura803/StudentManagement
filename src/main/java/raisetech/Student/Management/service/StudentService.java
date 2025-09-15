@@ -3,6 +3,7 @@ package raisetech.Student.Management.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import raisetech.Student.Management.data.Student;
 import raisetech.Student.Management.data.StudentCourse;
 import raisetech.Student.Management.domain.StudentDetail;
@@ -36,14 +37,14 @@ public class StudentService {
 
     public StudentDetail searchStudentById(Long id) {
         Student student = repository.searchStudent(id);
-        if (student == null) {
-            logger.warn("Student not found: id={}", id);
+        if (student == null || Boolean.TRUE.equals(student.getIsDeleted())) {
             throw new IllegalArgumentException("指定された受講生が存在しません");
         }
         List<StudentCourse> courses = repository.searchStudentCourse(id);
         return new StudentDetail(student, courses);
     }
 
+    @Transactional
     public void registerStudent(StudentDetail studentDetail) {
         studentDetail.validate();
 
@@ -61,6 +62,7 @@ public class StudentService {
         logger.info("Student registered successfully: id={}", studentDetail.getStudent().getId());
     }
 
+    @Transactional
     public void updateStudent(StudentDetail studentDetail) {
         studentDetail.validate();
 
@@ -84,6 +86,7 @@ public class StudentService {
      * @param id 学生ID
      * @return 削除結果情報
      */
+    @Transactional
     public Map<String, Object> deleteStudent(Long id) {
         Student student = repository.searchStudent(id);
         if (student == null || Boolean.TRUE.equals(student.getIsDeleted())) {

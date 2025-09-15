@@ -19,10 +19,10 @@
     </select>
 
     <!-- 学生1件検索 -->
-    <select id="searchStudent" parameterType="long" resultType="raisetech.Student.Management.data.Student">
-        SELECT id, name, age, is_deleted
+    <select id="searchStudent" resultType="raisetech.Student.Management.data.Student">
+        SELECT *
         FROM students
-        WHERE id = #{id}
+        WHERE id = #{id} AND is_deleted = FALSE
     </select>
 
     <!-- 学生に紐づくコース検索 -->
