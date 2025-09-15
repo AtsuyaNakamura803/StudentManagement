@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 受講生の詳細情報を保持するドメインクラスです。
- * 学生基本情報（Student）と履修コース情報（StudentCourse）の両方をまとめて扱います。
+ * 学生の詳細情報を保持するドメインクラスです。
+ * Student と StudentCourse をまとめて扱います。
  */
 public class StudentDetail {
 
@@ -25,22 +25,14 @@ public class StudentDetail {
         }
     }
 
-    public Student getStudent() {
-        return student;
-    }
+    public Student getStudent() { return student; }
 
-    public void setStudent(Student student) {
-        this.student = student;
-    }
+    public void setStudent(Student student) { this.student = student; }
 
-    public List<StudentCourse> getCourses() {
-        return courses;
-    }
+    public List<StudentCourse> getCourses() { return courses; }
 
     public void setCourses(List<StudentCourse> courses) {
-        if (courses != null) {
-            this.courses = courses;
-        }
+        if (courses != null) this.courses = courses;
     }
 
     @Override
@@ -53,9 +45,7 @@ public class StudentDetail {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(student, courses);
-    }
+    public int hashCode() { return Objects.hash(student, courses); }
 
     @Override
     public String toString() {
@@ -65,6 +55,10 @@ public class StudentDetail {
                 '}';
     }
 
+    /**
+     * バリデーションを行います。
+     * @throws IllegalArgumentException student が null の場合
+     */
     public void validate() {
         if (student == null) {
             throw new IllegalArgumentException("Student information must not be null");

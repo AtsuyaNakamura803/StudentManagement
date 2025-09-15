@@ -3,6 +3,7 @@ package raisetech.Student.Management.data;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
 import java.util.Objects;
 
 /**
@@ -12,12 +13,13 @@ public class Student {
 
     private Long id;
 
-    @NotBlank(message="名前は必須です")
+    @NotBlank(message = "名前は必須です")
     private String name;
 
-    @NotNull(message="年齢は必須です")
-    @Min(value=0, message="年齢は0以上でなければなりません")
+    @NotNull(message = "年齢は必須です")
+    @Min(value = 0, message = "年齢は0以上でなければなりません")
     private Integer age;
+
     private Boolean isDeleted; // 論理削除フラグ
 
     public Student() {}
@@ -29,53 +31,35 @@ public class Student {
         this.isDeleted = isDeleted;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setId(Long id) { this.id = id; }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public void setName(String name) { this.name = name; }
 
-    public Integer getAge() {
-        return age;
-    }
+    public Integer getAge() { return age; }
 
-    public void setAge(Integer age) {
-        this.age = age;
-    }
+    public void setAge(Integer age) { this.age = age; }
 
-    public Boolean getIsDeleted() {
-        return isDeleted;
-    }
+    public Boolean getIsDeleted() { return isDeleted; }
 
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
-    }
+    public void setIsDeleted(Boolean isDeleted) { this.isDeleted = isDeleted; }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Student)) return false;
         Student student = (Student) o;
-        return Objects.equals(id, student.id) &&
-                Objects.equals(name, student.name) &&
-                Objects.equals(age, student.age) &&
-                Objects.equals(isDeleted, student.isDeleted);
+        return Objects.equals(id, student.id)
+                && Objects.equals(name, student.name)
+                && Objects.equals(age, student.age)
+                && Objects.equals(isDeleted, student.isDeleted);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id, name, age, isDeleted);
-    }
+    public int hashCode() { return Objects.hash(id, name, age, isDeleted); }
 
     @Override
     public String toString() {

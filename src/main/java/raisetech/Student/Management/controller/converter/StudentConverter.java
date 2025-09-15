@@ -9,10 +9,17 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * 受講生とコース情報を結合して {@link StudentDetail} を生成するユーティリティクラスです。
+ * Student と StudentCourse を結合して StudentDetail を生成するユーティリティクラスです。
  */
 public class StudentConverter {
 
+    /**
+     * 学生とコースを結合して StudentDetail リストに変換します。
+     *
+     * @param students 学生リスト
+     * @param courses コースリスト
+     * @return StudentDetail リスト
+     */
     public static List<StudentDetail> convertStudentDetails(List<Student> students, List<StudentCourse> courses) {
         return students.stream()
                 .map(student -> {

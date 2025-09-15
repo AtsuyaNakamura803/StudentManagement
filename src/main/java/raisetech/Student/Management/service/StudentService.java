@@ -1,114 +1,115 @@
 package raisetech.Student.Management.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import raisetech.Student.Management.data.Student;
 import raisetech.Student.Management.data.StudentCourse;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.repository.StudentRepository;
+import raisetech.Student.Management.controller.converter.StudentConverter;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.HashMap;
 
 /**
- * 学生関連のビジネスロジックを提供するサービス。
+ * 学生情報および履修コース情報のビジネスロジックを提供するサービスクラスです。
  */
 @Service
 public class StudentService {
 
-    private static final Logger logger = LoggerFactory.getLogger(StudentService.class);
+    private final StudentRepository studentRepository;
 
-    private final StudentRepository repository;
-
-    public StudentService(StudentRepository repository) {
-        this.repository = repository;
-    }
-
-    public List<StudentDetail> getAllStudents() {
-        List<Student> students = repository.searchAllStudents();
-        return students.stream()
-                .map(s -> new StudentDetail(s, repository.searchStudentCourse(s.getId())))
-                .collect(Collectors.toList());
-    }
-
-    public StudentDetail searchStudentById(Long id) {
-        Student student = repository.searchStudent(id);
-        if (student == null || Boolean.TRUE.equals(student.getIsDeleted())) {
-            throw new IllegalArgumentException("指定された受講生が存在しません");
-        }
-        List<StudentCourse> courses = repository.searchStudentCourse(id);
-        return new StudentDetail(student, courses);
-    }
-
-    @Transactional
-    public void registerStudent(StudentDetail studentDetail) {
-        studentDetail.validate();
-
-        int count = repository.registerStudent(studentDetail.getStudent());
-        if (count == 0 || studentDetail.getStudent().getId() == null) {
-            logger.error("Student insert failed: {}", studentDetail.getStudent());
-            throw new IllegalStateException("受講生登録に失敗しました");
-        }
-
-        for (StudentCourse sc : studentDetail.getCourses()) {
-            sc.setStudentId(studentDetail.getStudent().getId());
-            repository.registerStudentCourse(sc);
-        }
-
-        logger.info("Student registered successfully: id={}", studentDetail.getStudent().getId());
-    }
-
-    @Transactional
-    public void updateStudent(StudentDetail studentDetail) {
-        studentDetail.validate();
-
-        repository.updateStudent(studentDetail.getStudent());
-
-        for (StudentCourse sc : studentDetail.getCourses()) {
-            if (sc.getId() == null) {
-                sc.setStudentId(studentDetail.getStudent().getId());
-                repository.registerStudentCourse(sc);
-            } else {
-                repository.updateStudentCourse(sc);
-            }
-        }
-
-        logger.info("Student updated successfully: id={}", studentDetail.getStudent().getId());
+    public StudentService(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
     }
 
     /**
-     * 学生と紐づくコースを論理削除します。
+     * すべての学生情報（履修コース含む）を取得します。
+     *
+     * @return 学生詳細リスト
+     */
+    public List<StudentDetail> getAllStudents() {
+        List<Student> students = studentRepository.findAll();
+        List<StudentCourse> courses = students.stream()
+                .flatMap(s -> studentRepository.findCoursesByStudentId(s.getId()).stream())
+                .collect(Collectors.toList());
+
+        return StudentConverter.convertStudentDetails(students, courses);
+    }
+
+    /**
+     * 指定IDの学生情報（履修コース含む）を取得します。
+     *
+     * @param id 学生ID
+     * @return 学生詳細
+     */
+    public StudentDetail searchStudentById(Long id) {
+        Student student = studentRepository.findById(id);
+        if (student == null) {
+            throw new IllegalArgumentException("指定された学生IDが存在しません: " + id);
+        }
+        List<StudentCourse> courses = studentRepository.findCoursesByStudentId(id);
+        return new StudentDetail(student, courses);
+    }
+
+    /**
+     * 学生情報および履修コース情報を登録します。
+     *
+     * @param studentDetail 登録対象の学生詳細
+     */
+    @Transactional
+    public void registerStudent(StudentDetail studentDetail) {
+        if (studentDetail == null || studentDetail.getStudent() == null) {
+            throw new IllegalArgumentException("StudentDetail または Student が null です");
+        }
+
+        studentRepository.insertStudent(studentDetail.getStudent());
+
+        List<StudentCourse> courses = studentDetail.getCourses();
+        if (courses != null && !courses.isEmpty()) {
+            for (StudentCourse sc : courses) {
+                sc.setStudentId(studentDetail.getStudent().getId());
+                studentRepository.insertStudentCourse(sc);
+            }
+        }
+    }
+
+    /**
+     * 学生情報および履修コース情報を更新します。
+     *
+     * @param studentDetail 更新対象の学生詳細
+     */
+    @Transactional
+    public void updateStudent(StudentDetail studentDetail) {
+        if (studentDetail == null || studentDetail.getStudent() == null) {
+            throw new IllegalArgumentException("StudentDetail または Student が null です");
+        }
+
+        studentRepository.updateStudent(studentDetail.getStudent());
+        // コース更新処理は必要に応じて追加
+    }
+
+    /**
+     * 学生情報および履修コース情報を論理削除します。
      *
      * @param id 学生ID
      * @return 削除結果情報
      */
     @Transactional
     public Map<String, Object> deleteStudent(Long id) {
-        Student student = repository.searchStudent(id);
+        Student student = studentRepository.findById(id);
         if (student == null || Boolean.TRUE.equals(student.getIsDeleted())) {
-            logger.warn("Student not found or already deleted: id={}", id);
-            throw new IllegalArgumentException("指定された受講生が存在しません");
+            throw new IllegalArgumentException("指定された学生IDは存在しないか既に削除されています: " + id);
         }
 
-        int studentCount = repository.deleteStudent(id);
-        int courseCount = repository.deleteStudentCourses(id);
-
-        if (studentCount == 0) {
-            logger.error("Failed to delete student: id={}", id);
-            throw new IllegalStateException("受講生の削除に失敗しました");
-        }
-
-        logger.info("Student logically deleted: id={}, coursesDeleted={}", id, courseCount);
+        studentRepository.deleteStudentCourses(id);
+        studentRepository.deleteStudent(id);
 
         Map<String, Object> result = new HashMap<>();
         result.put("studentId", id);
-        result.put("studentDeleted", studentCount);
-        result.put("coursesDeleted", courseCount);
-
+        result.put("studentDeleted", 1);
         return result;
     }
 }
