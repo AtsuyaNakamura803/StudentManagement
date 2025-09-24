@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="raisetech.student.management.repository.StudentCourseRepository">
+
+    <resultMap id="StudentCourseResultMap" type="raisetech.Student.Management.data.StudentCourse">
+        <id property="id" column="id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="courseName" column="course_name"/>
+        <result property="courseStartAt" column="course_start_at"/>
+        <result property="courseEndAt" column="course_end_at"/>
+        <result property="isDeleted" column="deleted"/>
+    </resultMap>
+
+    <!-- 学生IDで取得 -->
+    <select id="findByStudentId" parameterType="long" resultMap="StudentCourseResultMap">
+        SELECT * FROM students_courses WHERE student_id = #{studentId} AND deleted = FALSE
+    </select>
+
+    <!-- 全件取得 -->
+    <select id="findAll" resultMap="StudentCourseResultMap">
+        SELECT * FROM students_courses WHERE deleted = FALSE
+    </select>
+
+    <!-- 一括登録 -->
+    <insert id="insertAll" parameterType="java.util.List">
+        INSERT INTO students_courses (student_id, course_name, course_start_at, course_end_at, deleted)
+        VALUES
+        <foreach collection="list" item="course" separator=",">
+            (#{course.studentId}, #{course.courseName}, #{course.courseStartAt}, #{course.courseEndAt}, #{course.isDeleted})
+        </foreach>
+    </insert>
+
+    <!-- 一括更新 -->
+    <update id="updateAll" parameterType="java.util.List">
+        <foreach collection="list" item="course" separator=";">
+            UPDATE students_courses
+            SET course_name = #{course.courseName},
+            course_start_at = #{course.courseStartAt},
+            course_end_at = #{course.courseEndAt},
+            deleted = #{course.isDeleted}
+            WHERE id = #{course.id}
+        </foreach>
+    </update>
+
+    <!-- 論理削除（学生ID単位） -->
+    <update id="deleteByStudentId" parameterType="long">
+        UPDATE students_courses
+        SET deleted = TRUE
+        WHERE student_id = #{studentId}
+    </update>
+
+</mapper>

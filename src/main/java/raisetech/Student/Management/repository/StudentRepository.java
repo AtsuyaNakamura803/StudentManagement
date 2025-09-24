@@ -1,24 +1,26 @@
 package raisetech.Student.Management.repository;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import raisetech.Student.Management.domain.StudentDetail;
+import org.apache.ibatis.annotations.Select;
+import raisetech.Student.Management.data.Student;
 
 import java.util.List;
 
 /**
- * 学生情報とコース情報を操作する MyBatis Mapper
+ * 学生リポジトリ
  */
 @Mapper
 public interface StudentRepository {
 
-    List<StudentDetail> findAllStudentDetails();
+    @Select("SELECT * FROM students WHERE deleted = FALSE")
+    List<Student> findAll();
 
-    StudentDetail findById(@Param("id") int id);
+    @Select("SELECT * FROM students WHERE id = #{id} AND deleted = FALSE")
+    Student findById(Long id);
 
-    void saveStudent(StudentDetail studentDetail);
+    void insertStudent(Student student);
 
-    void updateStudent(StudentDetail studentDetail);
+    void updateStudent(Student student);
 
-    void deleteStudent(@Param("id") int id);
+    void deleteStudent(Long id);
 }

@@ -1,35 +1,29 @@
 package raisetech.Student.Management.data;
 
-import java.time.LocalDateTime;
-import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+import java.time.LocalDate;
 
 /**
- * 学生のコース情報を表すドメイン
+ * 学生のコース受講情報を表すデータクラス。
  */
+@Data
 public class StudentCourse {
 
-    private int id;
+    /** コースID */
+    private Long id;
 
-    private int studentId;
+    /** 学生ID（外部キー） */
+    private Long studentId;
 
-    @NotBlank(message = "コース名は必須です")
+    /** コース名 */
     private String courseName;
 
-    private LocalDateTime courseStartAt;
-    private LocalDateTime courseEndAt;
-    private boolean deleted;
+    /** コース開始日 */
+    private LocalDate courseStartAt;
 
-    // getter/setter
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-    public int getStudentId() { return studentId; }
-    public void setStudentId(int studentId) { this.studentId = studentId; }
-    public String getCourseName() { return courseName; }
-    public void setCourseName(String courseName) { this.courseName = courseName; }
-    public LocalDateTime getCourseStartAt() { return courseStartAt; }
-    public void setCourseStartAt(LocalDateTime courseStartAt) { this.courseStartAt = courseStartAt; }
-    public LocalDateTime getCourseEndAt() { return courseEndAt; }
-    public void setCourseEndAt(LocalDateTime courseEndAt) { this.courseEndAt = courseEndAt; }
-    public boolean isDeleted() { return deleted; }
-    public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    /** コース終了日 */
+    private LocalDate courseEndAt;
+
+    /** 削除フラグ */
+    private Boolean isDeleted = false;
 }

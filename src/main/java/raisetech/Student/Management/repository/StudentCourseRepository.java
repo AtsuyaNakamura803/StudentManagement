@@ -1,33 +1,26 @@
 package raisetech.Student.Management.repository;
 
-import raisetech.Student.Management.data.StudentCourse;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import raisetech.Student.Management.data.StudentCourse;
 
 import java.util.List;
 
 /**
- * 学生のコース情報 CRUD を行う Repository。
+ * 学生コースリポジトリ
  */
 @Mapper
 public interface StudentCourseRepository {
 
-    /**
-     * 全コースを取得（N+1 回避用）。
-     * @return コースリスト
-     */
-    List<StudentCourse> findAllCourses();
+    @Select("SELECT * FROM students_courses WHERE student_id = #{studentId} AND deleted = FALSE")
+    List<StudentCourse> findByStudentId(Long studentId);
 
-    /**
-     * 指定学生IDのコースを取得。
-     * @param studentId 学生ID
-     * @return コースリスト
-     */
-    List<StudentCourse> findCoursesByStudentId(@Param("studentId") Long studentId);
+    @Select("SELECT * FROM students_courses WHERE deleted = FALSE")
+    List<StudentCourse> findAll();
 
-    void insertCourse(StudentCourse course);
+    void insertAll(List<StudentCourse> courses);
 
-    void updateCourse(StudentCourse course);
+    void updateAll(List<StudentCourse> courses);
 
-    void deleteCourse(@Param("id") Long id);
+    void deleteByStudentId(Long studentId);
 }
