@@ -1,63 +1,76 @@
 package raisetech.Student.Management.data;
 
-import java.util.Objects;
+import java.time.LocalDateTime;
 
 /**
- * 学生とコースの関連情報を保持するクラスです。
+ * 学生のコース情報を表すドメイン
  */
 public class StudentCourse {
 
-    private Long id;
-    private Long studentId;
+    private int id;
+    private int studentId;
     private String courseName;
-    private Boolean isDeleted; // 論理削除フラグ
+    private LocalDateTime courseStartAt;
+    private LocalDateTime courseEndAt;
+    private boolean deleted;
 
-    public StudentCourse() {}
+    /** ID を取得 */
+    public int getId() {
+        return id;
+    }
 
-    public StudentCourse(Long id, Long studentId, String courseName, Boolean isDeleted) {
+    /** ID を設定 */
+    public void setId(int id) {
         this.id = id;
+    }
+
+    /** 学生IDを取得 */
+    public int getStudentId() {
+        return studentId;
+    }
+
+    /** 学生IDを設定 */
+    public void setStudentId(int studentId) {
         this.studentId = studentId;
+    }
+
+    /** コース名を取得 */
+    public String getCourseName() {
+        return courseName;
+    }
+
+    /** コース名を設定 */
+    public void setCourseName(String courseName) {
         this.courseName = courseName;
-        this.isDeleted = isDeleted;
     }
 
-    public Long getId() { return id; }
-
-    public void setId(Long id) { this.id = id; }
-
-    public Long getStudentId() { return studentId; }
-
-    public void setStudentId(Long studentId) { this.studentId = studentId; }
-
-    public String getCourseName() { return courseName; }
-
-    public void setCourseName(String courseName) { this.courseName = courseName; }
-
-    public Boolean getIsDeleted() { return isDeleted; }
-
-    public void setIsDeleted(Boolean isDeleted) { this.isDeleted = isDeleted; }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof StudentCourse)) return false;
-        StudentCourse that = (StudentCourse) o;
-        return Objects.equals(id, that.id)
-                && Objects.equals(studentId, that.studentId)
-                && Objects.equals(courseName, that.courseName)
-                && Objects.equals(isDeleted, that.isDeleted);
+    /** コース開始日時を取得 */
+    public LocalDateTime getCourseStartAt() {
+        return courseStartAt;
     }
 
-    @Override
-    public int hashCode() { return Objects.hash(id, studentId, courseName, isDeleted); }
+    /** コース開始日時を設定 */
+    public void setCourseStartAt(LocalDateTime courseStartAt) {
+        this.courseStartAt = courseStartAt;
+    }
 
-    @Override
-    public String toString() {
-        return "StudentCourse{" +
-                "id=" + id +
-                ", studentId=" + studentId +
-                ", courseName='" + courseName + '\'' +
-                ", isDeleted=" + isDeleted +
-                '}';
+    /** コース終了日時を取得 */
+    public LocalDateTime getCourseEndAt() {
+        return courseEndAt;
+    }
+
+    /** コース終了日時を設定 */
+    public void setCourseEndAt(LocalDateTime courseEndAt) {
+        this.courseEndAt = courseEndAt;
+    }
+
+    /** 削除フラグを取得 */
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    /** 削除フラグを設定 */
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }

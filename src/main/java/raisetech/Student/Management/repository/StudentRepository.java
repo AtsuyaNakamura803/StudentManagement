@@ -2,72 +2,78 @@ package raisetech.Student.Management.repository;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import raisetech.Student.Management.data.Student;
-import raisetech.Student.Management.data.StudentCourse;
+import raisetech.Student.Management.domain.StudentDetail;
 
 import java.util.List;
 
 /**
- * 学生および履修コースに関するデータアクセス操作を提供するリポジトリインターフェースです。
+ * 学生情報とコース情報を操作する MyBatis Mapper インターフェース。
  */
 @Mapper
 public interface StudentRepository {
 
     /**
-     * すべての学生を取得します（論理削除されていないもの）。
+     * すべての学生詳細情報を取得する。
      *
-     * @return 学生リスト
+     * @return 学生詳細情報のリスト
      */
-    List<Student> findAll();
+    List<StudentDetail> findAllStudentDetails();
 
     /**
-     * 指定IDの学生を取得します。
+     * 指定IDの学生詳細情報を取得する。
      *
      * @param id 学生ID
-     * @return 学生情報
+     * @return 学生詳細情報
      */
-    Student findById(@Param("id") Long id);
+    StudentDetail findById(@Param("id") int id);
 
     /**
-     * 指定学生の履修コース情報を取得します。
+     * IDリストに対応する学生詳細情報を取得する。
+     *
+     * @param ids 学生IDのリスト
+     * @return 学生詳細情報リスト
+     */
+    List<StudentDetail> findByIdList(@Param("ids") List<Integer> ids);
+
+    /**
+     * 学生情報を登録する。
+     *
+     * @param studentDetail 学生詳細情報
+     */
+    void save(StudentDetail studentDetail);
+
+    /**
+     * 学生情報を更新する。
+     *
+     * @param studentDetail 学生詳細情報
+     */
+    void update(StudentDetail studentDetail);
+
+    /**
+     * 学生詳細情報を更新する。
+     *
+     * @param studentDetail 学生詳細情報
+     */
+    void updateStudentInfo(StudentDetail studentDetail);
+
+    /**
+     * 学生のコース情報を削除する。
      *
      * @param studentId 学生ID
-     * @return コースリスト
      */
-    List<StudentCourse> findCoursesByStudentId(@Param("studentId") Long studentId);
+    void deleteStudentCourses(@Param("studentId") int studentId);
 
     /**
-     * 学生情報を登録します。
+     * 学生コース情報を登録する。
      *
-     * @param student 登録対象の学生
+     * @param course 学生コース情報
      */
-    void insertStudent(Student student);
+    void insertStudentCourse(@Param("course") raisetech.Student.Management.data.StudentCourse course);
 
     /**
-     * 学生情報を更新します。
+     * 学生IDに紐づくコース情報を削除する。
      *
-     * @param student 更新対象の学生
+     * @param studentId 学生ID
      */
-    void updateStudent(Student student);
-
-    /**
-     * 学生コース情報を登録します。
-     *
-     * @param studentCourse 登録対象のコース
-     */
-    void insertStudentCourse(StudentCourse studentCourse);
-
-    /**
-     * 学生の履修コースを論理削除します。
-     *
-     * @param id 学生ID
-     */
-    void deleteStudentCourses(@Param("id") Long id);
-
-    /**
-     * 学生を論理削除します。
-     *
-     * @param id 学生ID
-     */
-    void deleteStudent(@Param("id") Long id);
+    void deleteCoursesByStudentId(@Param("studentId") int studentId);
 }

@@ -5,50 +5,109 @@
 
 <mapper namespace="raisetech.Student.Management.repository.StudentRepository">
 
-    <select id="findAll" resultType="raisetech.Student.Management.data.Student">
-        SELECT id, name, age, is_deleted
-        FROM students
-        WHERE is_deleted = FALSE
+    <!-- StudentDetail 用 ResultMap -->
+    <resultMap id="StudentDetailMap" type="raisetech.Student.Management.domain.StudentDetail">
+        <association property="student" javaType="raisetech.Student.Management.data.Student">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="kanaName" column="kana_name"/>
+            <result property="nickname" column="nickname"/>
+            <result property="email" column="email"/>
+            <result property="area" column="area"/>
+            <result property="age" column="age"/>
+            <result property="sex" column="sex"/>
+            <result property="remark" column="remark"/>
+            <result property="deleted" column="is_deleted"/>
+        </association>
+        <collection property="courses" ofType="raisetech.Student.Management.data.StudentCourse">
+            <id property="id" column="course_id"/>
+            <result property="studentId" column="student_id"/>
+            <result property="courseName" column="course_name"/>
+            <result property="courseStartAt" column="course_start_at"/>
+            <result property="courseEndAt" column="course_end_at"/>
+            <result property="deleted" column="is_deleted"/>
+        </collection>
+    </resultMap>
+
+    <!-- 全学生詳細情報 -->
+    <select id="findAllStudentDetails" resultMap="StudentDetailMap">
+        SELECT s.id, s.name, s.kana_name, s.nickname, s.email, s.area, s.age, s.sex, s.remark, s.is_deleted,
+        c.id AS course_id, c.student_id, c.course_name, c.course_start_at, c.course_end_at, c.is_deleted
+        FROM students s
+        LEFT JOIN students_courses c ON s.id = c.student_id
     </select>
 
-    <select id="findById" parameterType="java.lang.Long" resultType="raisetech.Student.Management.data.Student">
-        SELECT id, name, age, is_deleted
-        FROM students
-        WHERE id = #{id} AND is_deleted = FALSE
+    <!-- 指定IDの学生詳細情報 -->
+    <select id="findById" parameterType="int" resultMap="StudentDetailMap">
+        SELECT s.id, s.name, s.kana_name, s.nickname, s.email, s.area, s.age, s.sex, s.remark, s.is_deleted,
+        c.id AS course_id, c.student_id, c.course_name, c.course_start_at, c.course_end_at, c.is_deleted
+        FROM students s
+        LEFT JOIN students_courses c ON s.id = c.student_id
+        WHERE s.id = #{id}
     </select>
 
-    <select id="findCoursesByStudentId" parameterType="java.lang.Long" resultType="raisetech.Student.Management.data.StudentCourse">
-        SELECT id, student_id, course_name, is_deleted
-        FROM students_courses
-        WHERE student_id = #{studentId} AND is_deleted = FALSE
+    <!-- IDリストに対応する学生詳細情報 -->
+    <select id="findByIdList" parameterType="list" resultMap="StudentDetailMap">
+        SELECT s.id, s.name, s.kana_name, s.nickname, s.email, s.area, s.age, s.sex, s.remark, s.is_deleted,
+        c.id AS course_id, c.student_id, c.course_name, c.course_start_at, c.course_end_at, c.is_deleted
+        FROM students s
+        LEFT JOIN students_courses c ON s.id = c.student_id
+        WHERE s.id IN
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
 
-    <insert id="insertStudent" parameterType="raisetech.Student.Management.data.Student" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO students (name, age, is_deleted)
-        VALUES (#{name}, #{age}, FALSE)
+    <!-- 学生情報登録 -->
+    <insert id="save" parameterType="raisetech.Student.Management.domain.StudentDetail" useGeneratedKeys="true" keyProperty="student.id">
+        INSERT INTO students (name, kana_name, nickname, email, area, age, sex, remark, is_deleted)
+        VALUES (#{student.name}, #{student.kanaName}, #{student.nickname}, #{student.email}, #{student.area}, #{student.age}, #{student.sex}, #{student.remark}, #{student.deleted})
     </insert>
 
-    <update id="updateStudent" parameterType="raisetech.Student.Management.data.Student">
+    <!-- 学生情報更新 -->
+    <update id="update" parameterType="raisetech.Student.Management.domain.StudentDetail">
         UPDATE students
-        SET name = #{name}, age = #{age}
-        WHERE id = #{id} AND is_deleted = FALSE
+        SET name = #{student.name},
+        kana_name = #{student.kanaName},
+        nickname = #{student.nickname},
+        email = #{student.email},
+        area = #{student.area},
+        age = #{student.age},
+        sex = #{student.sex},
+        remark = #{student.remark},
+        is_deleted = #{student.deleted}
+        WHERE id = #{student.id}
     </update>
 
-    <insert id="insertStudentCourse" parameterType="raisetech.Student.Management.data.StudentCourse" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO students_courses (student_id, course_name, is_deleted)
-        VALUES (#{studentId}, #{courseName}, FALSE)
+    <!-- 学生詳細情報更新 -->
+    <update id="updateStudentInfo" parameterType="raisetech.Student.Management.domain.StudentDetail">
+        UPDATE students
+        SET name = #{student.name},
+        kana_name = #{student.kanaName},
+        nickname = #{student.nickname},
+        email = #{student.email},
+        area = #{student.area},
+        age = #{student.age},
+        sex = #{student.sex},
+        remark = #{student.remark},
+        is_deleted = #{student.deleted}
+        WHERE id = #{student.id}
+    </update>
+
+    <!-- 学生コース削除 -->
+    <delete id="deleteStudentCourses" parameterType="int">
+        DELETE FROM students_courses WHERE student_id = #{studentId}
+    </delete>
+
+    <!-- 学生コース登録 -->
+    <insert id="insertStudentCourse" parameterType="raisetech.Student.Management.data.StudentCourse">
+        INSERT INTO students_courses (student_id, course_name, course_start_at, course_end_at, is_deleted)
+        VALUES (#{studentId}, #{courseName}, #{courseStartAt}, #{courseEndAt}, #{deleted})
     </insert>
 
-    <update id="deleteStudentCourses" parameterType="java.lang.Long">
-        UPDATE students_courses
-        SET is_deleted = TRUE
-        WHERE student_id = #{id}
-    </update>
-
-    <update id="deleteStudent" parameterType="java.lang.Long">
-        UPDATE students
-        SET is_deleted = TRUE
-        WHERE id = #{id}
-    </update>
+    <!-- 学生IDに紐づくコース削除 -->
+    <delete id="deleteCoursesByStudentId" parameterType="int">
+        DELETE FROM students_courses WHERE student_id = #{studentId}
+    </delete>
 
 </mapper>

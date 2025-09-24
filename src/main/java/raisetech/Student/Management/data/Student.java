@@ -1,73 +1,118 @@
 package raisetech.Student.Management.data;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
-import java.util.Objects;
-
 /**
- * 受講生の基本情報を保持するクラスです。
+ * 学生情報を表すドメイン
  */
 public class Student {
 
-    private Long id;
-
-    @NotBlank(message = "名前は必須です")
+    private int id;
     private String name;
+    private String kanaName;
+    private String nickname;
+    private String email;
+    private String area;
+    private int age;
+    private String sex;
+    private String remark;
+    private boolean deleted;
 
-    @NotNull(message = "年齢は必須です")
-    @Min(value = 0, message = "年齢は0以上でなければなりません")
-    private Integer age;
+    /** ID を取得 */
+    public int getId() {
+        return id;
+    }
 
-    private Boolean isDeleted; // 論理削除フラグ
-
-    public Student() {}
-
-    public Student(Long id, String name, Integer age, Boolean isDeleted) {
+    /** ID を設定 */
+    public void setId(int id) {
         this.id = id;
+    }
+
+    /** 名前を取得 */
+    public String getName() {
+        return name;
+    }
+
+    /** 名前を設定 */
+    public void setName(String name) {
         this.name = name;
+    }
+
+    /** カナ名を取得 */
+    public String getKanaName() {
+        return kanaName;
+    }
+
+    /** カナ名を設定 */
+    public void setKanaName(String kanaName) {
+        this.kanaName = kanaName;
+    }
+
+    /** ニックネームを取得 */
+    public String getNickname() {
+        return nickname;
+    }
+
+    /** ニックネームを設定 */
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    /** メールを取得 */
+    public String getEmail() {
+        return email;
+    }
+
+    /** メールを設定 */
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    /** エリアを取得 */
+    public String getArea() {
+        return area;
+    }
+
+    /** エリアを設定 */
+    public void setArea(String area) {
+        this.area = area;
+    }
+
+    /** 年齢を取得 */
+    public int getAge() {
+        return age;
+    }
+
+    /** 年齢を設定 */
+    public void setAge(int age) {
         this.age = age;
-        this.isDeleted = isDeleted;
     }
 
-    public Long getId() { return id; }
-
-    public void setId(Long id) { this.id = id; }
-
-    public String getName() { return name; }
-
-    public void setName(String name) { this.name = name; }
-
-    public Integer getAge() { return age; }
-
-    public void setAge(Integer age) { this.age = age; }
-
-    public Boolean getIsDeleted() { return isDeleted; }
-
-    public void setIsDeleted(Boolean isDeleted) { this.isDeleted = isDeleted; }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Student)) return false;
-        Student student = (Student) o;
-        return Objects.equals(id, student.id)
-                && Objects.equals(name, student.name)
-                && Objects.equals(age, student.age)
-                && Objects.equals(isDeleted, student.isDeleted);
+    /** 性別を取得 */
+    public String getSex() {
+        return sex;
     }
 
-    @Override
-    public int hashCode() { return Objects.hash(id, name, age, isDeleted); }
+    /** 性別を設定 */
+    public void setSex(String sex) {
+        this.sex = sex;
+    }
 
-    @Override
-    public String toString() {
-        return "Student{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", age=" + age +
-                ", isDeleted=" + isDeleted +
-                '}';
+    /** 備考を取得 */
+    public String getRemark() {
+        return remark;
+    }
+
+    /** 備考を設定 */
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    /** 削除フラグを取得 */
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    /** 削除フラグを設定 */
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }
