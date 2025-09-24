@@ -1,17 +1,18 @@
 package raisetech.Student.Management.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.service.StudentService;
 
 import java.util.List;
 
 /**
- * 学生情報の REST API コントローラー。
+ * 学生情報 Controller
  */
 @RestController
+@RequestMapping("/student")
 public class StudentController {
 
     private final StudentService studentService;
@@ -20,22 +21,31 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-    /**
-     * すべての学生情報を取得するAPI。
-     * @return 学生詳細情報リスト
-     */
-    @GetMapping("/student/list")
+    @GetMapping("/list")
     public List<StudentDetail> getAllStudents() {
         return studentService.getAllStudents();
     }
 
-    /**
-     * 指定IDの学生情報を取得するAPI。
-     * @param id 学生ID
-     * @return 学生詳細情報
-     */
-    @GetMapping("/student/{id}")
+    @GetMapping("/{id}")
     public StudentDetail getStudent(@PathVariable int id) {
-        return studentService.getStudentById(id);
+        return studentService.getStudent(id);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<String> registerStudent(@RequestBody @Valid StudentDetail studentDetail) {
+        studentService.saveStudent(studentDetail);
+        return ResponseEntity.ok("登録完了");
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<String> updateStudent(@RequestBody @Valid StudentDetail studentDetail) {
+        studentService.updateStudent(studentDetail);
+        return ResponseEntity.ok("更新完了");
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteStudent(@PathVariable int id) {
+        studentService.deleteStudent(id);
+        return ResponseEntity.ok("削除完了");
     }
 }
