@@ -3,45 +3,59 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
+<!--
+  StudentCourseRepository Mapper XML
+  MyBatis 用 XML Mapper
+  insertAll / updateAll の foreach collection 名を "courses" に統一
+-->
+
 <mapper namespace="raisetech.Student.Management.repository.StudentCourseRepository">
 
-    <!-- 学生コース登録（複数） -->
+    <!--
+      学生コースを一括挿入
+      @Param("courses") のコレクション名と一致させる
+    -->
     <insert id="insertAll">
-        INSERT INTO students_courses (student_id, course_name, course_start_at, course_end_at, deleted)
-        VALUES
-        <foreach collection="list" item="course" separator=",">
-            (#{course.studentId}, #{course.courseName}, #{course.courseStartAt}, #{course.courseEndAt}, FALSE)
+        <foreach collection="courses" item="course" separator=";">
+            INSERT INTO students_courses(student_id, course_name, course_start_at, course_end_at, deleted)
+            VALUES(
+            #{course.studentId},
+            #{course.courseName},
+            #{course.courseStartAt},
+            #{course.courseEndAt},
+            #{course.deleted}
+            )
         </foreach>
     </insert>
 
-    <!-- 学生IDでコース取得 -->
-    <select id="findByStudentId" resultType="raisetech.Student.Management.data.StudentCourse">
-        SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
-        FROM students_courses
-        WHERE student_id = #{studentId} AND deleted = FALSE
-        ORDER BY id
-    </select>
-
-    <!-- 全コース取得 -->
-    <select id="findAll" resultType="raisetech.Student.Management.data.StudentCourse">
-        SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
-        FROM students_courses
-        WHERE deleted = FALSE
-        ORDER BY id
-    </select>
-
-    <!-- 学生コース更新（複数） -->
+    <!--
+      学生コースを一括更新
+      @Param("courses") のコレクション名と一致させる
+    -->
     <update id="updateAll">
-        <foreach collection="list" item="course" separator=";">
+        <foreach collection="courses" item="course" separator=";">
             UPDATE students_courses
-            SET course_name = #{course.courseName},
+            SET
+            course_name = #{course.courseName},
             course_start_at = #{course.courseStartAt},
-            course_end_at = #{course.courseEndAt}
+            course_end_at = #{course.courseEndAt},
+            deleted = #{course.deleted}
             WHERE id = #{course.id}
         </foreach>
     </update>
 
-    <!-- 学生IDでコース論理削除 -->
+    <!--
+      指定学生IDのコース一覧取得
+    -->
+    <select id="findByStudentId" resultType="raisetech.Student.Management.data.StudentCourse">
+        SELECT id, student_id AS studentId, course_name AS courseName, course_start_at AS courseStartAt, course_end_at AS courseEndAt, deleted
+        FROM students_courses
+        WHERE student_id = #{studentId} AND deleted = FALSE
+    </select>
+
+    <!--
+      指定学生IDのコース論理削除
+    -->
     <update id="deleteByStudentId">
         UPDATE students_courses
         SET deleted = TRUE
