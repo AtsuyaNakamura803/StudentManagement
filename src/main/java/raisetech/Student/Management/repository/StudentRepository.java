@@ -3,22 +3,42 @@ package raisetech.Student.Management.repository;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import raisetech.Student.Management.data.Student;
-
 import java.util.List;
 
 /**
- * 学生テーブル操作用 Repository
+ * 学生情報リポジトリ（MyBatis Mapper インターフェース）
  */
 @Mapper
 public interface StudentRepository {
 
-    List<Student> findAll();
+    /**
+     * 学生登録
+     * @param student 登録する学生
+     */
+    void insertStudent(Student student);
 
+    /**
+     * 学生更新
+     * @param student 更新対象学生
+     */
+    void updateStudent(Student student);
+
+    /**
+     * 学生取得（ID）
+     * @param id 学生ID
+     * @return Student
+     */
     Student findById(@Param("id") Long id);
 
-    void insertStudent(@Param("student") Student student);
-
-    void updateStudent(@Param("student") Student student);
-
+    /**
+     * 論理削除
+     * @param id 学生ID
+     */
     void deleteStudent(@Param("id") Long id);
+
+    /**
+     * 全学生取得（deleted=false のみ）
+     * @return 学生リスト
+     */
+    List<Student> findAll();
 }

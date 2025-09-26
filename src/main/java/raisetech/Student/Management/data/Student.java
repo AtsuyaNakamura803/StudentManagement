@@ -1,6 +1,5 @@
 package raisetech.Student.Management.data;
 
-import jakarta.validation.constraints.*;
 import lombok.Data;
 
 /**
@@ -9,19 +8,20 @@ import lombok.Data;
 @Data
 public class Student {
 
+    /** 学生ID（自動採番） */
     private Long id;
 
-    @NotBlank(message = "名前は必須です")
+    /** 名前 */
     private String name;
 
-    @Email(message = "正しいメールアドレス形式で入力してください")
+    /** メールアドレス */
     private String email;
 
-    @Min(value = 0, message = "年齢は0以上を入力してください")
+    /** 年齢 */
     private Integer age;
 
-    @NotBlank(message = "性別は必須です")
-    private String sex; // DBカラムと整合
+    /** 性別 */
+    private String sex;
 
     /** 論理削除フラグ */
     private Boolean deleted = false;

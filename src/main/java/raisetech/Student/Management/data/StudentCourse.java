@@ -1,8 +1,7 @@
 package raisetech.Student.Management.data;
 
 import lombok.Data;
-
-import java.time.LocalDate;
+import java.util.Date;
 
 /**
  * 学生コース情報エンティティ
@@ -10,10 +9,21 @@ import java.time.LocalDate;
 @Data
 public class StudentCourse {
 
+    /** コースID */
     private Long id;
+
+    /** 学生ID */
     private Long studentId;
+
+    /** コース名 */
     private String courseName;
-    private LocalDate courseStartAt;
-    private LocalDate courseEndAt;
+
+    /** 開始日 */
+    private Date courseStartAt;
+
+    /** 終了日 */
+    private Date courseEndAt;
+
+    /** 論理削除フラグ */
     private Boolean deleted = false;
 }

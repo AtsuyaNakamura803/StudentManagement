@@ -4,56 +4,59 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
- * アプリケーション全体の例外ハンドリングを担当
- *
+ * グローバル例外ハンドラ
  * <p>
- * - Bean Validation 失敗時 → 400 Bad Request
- * - データ未存在 → 404 Not Found
- * - その他例外 → 500 Internal Server Error（内部ログ出力のみ、クライアントには一般文）
- * </p>
+ * Controller で発生した例外を統一的に処理し、クライアントには安全なメッセージを返却。
+ * 内部ログには詳細なスタックトレースを出力。
  */
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
-     * @Valid でのバリデーション失敗をハンドリング
+     * バリデーションエラー処理
+     * @param ex MethodArgumentNotValidException
+     * @return フィールドごとのエラーメッセージマップ + 400 Bad Request
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, String>> handleValidationException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
-        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            errors.put(error.getField(), error.getDefaultMessage());
-        }
+        ex.getBindingResult().getFieldErrors()
+                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+        logger.warn("Validation failed: {}", errors);
         return ResponseEntity.badRequest().body(errors);
     }
 
     /**
-     * データが存在しない場合（NoSuchElementException）を 404 にマップ
+     * データ未検出時の例外処理
+     * @param ex NoSuchElementException
+     * @return 404 Not Found
      */
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<String> handleNotFoundException(NoSuchElementException ex) {
-        logger.warn("Requested entity not found: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("指定されたデータは存在しません");
+    public ResponseEntity<Map<String, String>> handleNoSuchElementException(NoSuchElementException ex) {
+        logger.warn("Resource not found: {}", ex.getMessage());
+        Map<String, String> response = Map.of("error", "Resource not found");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     /**
-     * 想定外の例外は 500 にマップ、内部ログにスタックトレースを出力
+     * 全ての未処理例外をキャッチ
+     * @param ex Exception
+     * @return 500 Internal Server Error
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception ex) {
-        logger.error("Internal server error occurred", ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("サーバ内部でエラーが発生しました");
+    public ResponseEntity<Map<String, String>> handleAllExceptions(Exception ex) {
+        logger.error("Internal server error", ex);
+        Map<String, String> response = Map.of("error", "Internal server error");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

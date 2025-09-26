@@ -5,23 +5,8 @@
 
 <mapper namespace="raisetech.Student.Management.repository.StudentCourseRepository">
 
-    <!-- 全件取得 -->
-    <select id="findAll" resultType="raisetech.Student.Management.data.StudentCourse">
-        SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
-        FROM students_courses
-        WHERE deleted = FALSE
-    </select>
-
-    <!-- 学生IDで取得 -->
-    <select id="findByStudentId" parameterType="java.lang.Long"
-            resultType="raisetech.Student.Management.data.StudentCourse">
-        SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
-        FROM students_courses
-        WHERE student_id = #{studentId} AND deleted = FALSE
-    </select>
-
-    <!-- 一括登録 -->
-    <insert id="insertAll" parameterType="java.util.List">
+    <!-- 学生コース登録（複数） -->
+    <insert id="insertAll">
         INSERT INTO students_courses (student_id, course_name, course_start_at, course_end_at, deleted)
         VALUES
         <foreach collection="list" item="course" separator=",">
@@ -29,8 +14,35 @@
         </foreach>
     </insert>
 
-    <!-- 論理削除 -->
-    <update id="deleteByStudentId" parameterType="java.lang.Long">
+    <!-- 学生IDでコース取得 -->
+    <select id="findByStudentId" resultType="raisetech.Student.Management.data.StudentCourse">
+        SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
+        FROM students_courses
+        WHERE student_id = #{studentId} AND deleted = FALSE
+        ORDER BY id
+    </select>
+
+    <!-- 全コース取得 -->
+    <select id="findAll" resultType="raisetech.Student.Management.data.StudentCourse">
+        SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
+        FROM students_courses
+        WHERE deleted = FALSE
+        ORDER BY id
+    </select>
+
+    <!-- 学生コース更新（複数） -->
+    <update id="updateAll">
+        <foreach collection="list" item="course" separator=";">
+            UPDATE students_courses
+            SET course_name = #{course.courseName},
+            course_start_at = #{course.courseStartAt},
+            course_end_at = #{course.courseEndAt}
+            WHERE id = #{course.id}
+        </foreach>
+    </update>
+
+    <!-- 学生IDでコース論理削除 -->
+    <update id="deleteByStudentId">
         UPDATE students_courses
         SET deleted = TRUE
         WHERE student_id = #{studentId}
