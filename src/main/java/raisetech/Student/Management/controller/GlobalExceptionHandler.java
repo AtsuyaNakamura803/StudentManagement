@@ -1,4 +1,4 @@
-package raisetech.Student.Management.converter.exception;
+package raisetech.Student.Management.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;

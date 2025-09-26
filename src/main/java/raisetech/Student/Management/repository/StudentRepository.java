@@ -1,6 +1,7 @@
 package raisetech.Student.Management.repository;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import raisetech.Student.Management.data.Student;
 import java.util.List;
 
@@ -8,8 +9,12 @@ import java.util.List;
 public interface StudentRepository {
 
     List<Student> findAll();
-    Student findById(Long id);
+
+    Student findById(@Param("id") Long id);
+
     void insertStudent(Student student);
+
     void updateStudent(Student student);
-    void deleteStudent(Long id);
+
+    void deleteStudent(@Param("id") Long id);
 }

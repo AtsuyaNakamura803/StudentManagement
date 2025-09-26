@@ -9,15 +9,15 @@
     <select id="findAll" resultType="raisetech.Student.Management.data.StudentCourse">
         SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
         FROM students_courses
-        WHERE deleted = false
+        WHERE deleted = FALSE
     </select>
 
     <!-- 学生IDでコース一覧を取得 -->
-    <select id="findByStudentId" parameterType="long"
+    <select id="findByStudentId" parameterType="java.lang.Long"
             resultType="raisetech.Student.Management.data.StudentCourse">
         SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
         FROM students_courses
-        WHERE student_id = #{studentId} AND deleted = false
+        WHERE student_id = #{studentId} AND deleted = FALSE
     </select>
 
     <!-- コース一括追加 -->
@@ -25,7 +25,7 @@
         INSERT INTO students_courses (student_id, course_name, course_start_at, course_end_at, deleted)
         VALUES
         <foreach collection="list" item="course" separator=",">
-            (#{course.studentId}, #{course.courseName}, #{course.courseStartAt}, #{course.courseEndAt}, false)
+            (#{course.studentId}, #{course.courseName}, #{course.courseStartAt}, #{course.courseEndAt}, FALSE)
         </foreach>
     </insert>
 
@@ -42,9 +42,9 @@
     </update>
 
     <!-- 学生IDでコース削除（論理削除） -->
-    <update id="deleteByStudentId" parameterType="long">
+    <update id="deleteByStudentId" parameterType="java.lang.Long">
         UPDATE students_courses
-        SET deleted = true
+        SET deleted = TRUE
         WHERE student_id = #{studentId}
     </update>
 

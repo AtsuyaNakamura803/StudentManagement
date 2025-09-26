@@ -20,7 +20,7 @@ public class StudentDetail {
     private String name;
     private String email;
     private Integer age;
-    private String gender;
+    private String gender; // Student.sex をここにマッピング
     private Boolean deleted;
     private List<StudentCourse> courses;
 
@@ -33,7 +33,7 @@ public class StudentDetail {
         student.setName(this.name);
         student.setEmail(this.email);
         student.setAge(this.age);
-        student.setGender(this.gender);
+        student.setSex(this.gender); // gender → Student.sex にマッピング
         student.setDeleted(this.deleted != null ? this.deleted : false);
         return student;
     }

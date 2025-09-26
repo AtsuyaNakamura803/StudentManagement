@@ -21,7 +21,7 @@ public class Student {
     private Integer age;
 
     @NotBlank(message = "性別は必須です")
-    private String gender;
+    private String sex;
 
     /** 論理削除フラグ */
     private Boolean deleted = false;

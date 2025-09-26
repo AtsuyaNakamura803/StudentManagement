@@ -13,7 +13,7 @@ import raisetech.Student.Management.repository.StudentRepository;
 import java.util.List;
 
 /**
- * 学生関連のサービス
+ * 学生サービス
  */
 @Service
 @RequiredArgsConstructor
@@ -23,8 +23,7 @@ public class StudentService {
     private final StudentCourseRepository studentCourseRepository;
 
     /**
-     * 学生全件を取得し、コース情報を付与して StudentDetail リストで返す
-     * @return StudentDetail のリスト
+     * 学生全件を取得し、コース情報を付与
      */
     @Transactional(readOnly = true)
     public List<StudentDetail> getAllStudents() {
@@ -34,9 +33,7 @@ public class StudentService {
     }
 
     /**
-     * 指定IDの学生を取得し、コース情報を付与
-     * @param id 学生ID
-     * @return StudentDetail
+     * 指定IDの学生を取得
      */
     @Transactional(readOnly = true)
     public StudentDetail getStudent(Long id) {
@@ -50,8 +47,6 @@ public class StudentService {
 
     /**
      * 学生登録
-     * @param studentDetail 学生詳細情報
-     * @return 保存後の StudentDetail
      */
     @Transactional
     public StudentDetail saveStudent(StudentDetail studentDetail) {
@@ -66,8 +61,6 @@ public class StudentService {
 
     /**
      * 学生更新
-     * @param studentDetail 学生詳細情報
-     * @return 更新後の StudentDetail
      */
     @Transactional
     public StudentDetail updateStudent(StudentDetail studentDetail) {
@@ -81,7 +74,6 @@ public class StudentService {
 
     /**
      * 学生削除（論理削除）
-     * @param id 学生ID
      */
     @Transactional
     public void deleteStudent(Long id) {
