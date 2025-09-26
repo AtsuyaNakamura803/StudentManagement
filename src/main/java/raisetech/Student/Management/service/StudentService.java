@@ -1,9 +1,7 @@
 package raisetech.Student.Management.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import raisetech.Student.Management.controller.converter.StudentConverter;
 import raisetech.Student.Management.data.Student;
 import raisetech.Student.Management.data.StudentCourse;
 import raisetech.Student.Management.domain.StudentDetail;
@@ -11,65 +9,53 @@ import raisetech.Student.Management.repository.StudentCourseRepository;
 import raisetech.Student.Management.repository.StudentRepository;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 /**
- * 学生サービス
+ * 学生情報 Service
  */
 @Service
-@RequiredArgsConstructor
 public class StudentService {
 
     private final StudentRepository studentRepository;
     private final StudentCourseRepository studentCourseRepository;
 
-    /**
-     * 学生全件を取得し、コース情報を付与
-     */
-    @Transactional(readOnly = true)
-    public List<StudentDetail> getAllStudents() {
-        List<Student> students = studentRepository.findAll();
-        List<StudentCourse> courses = studentCourseRepository.findAll();
-        return StudentConverter.convertToStudentDetails(students, courses);
+    public StudentService(StudentRepository studentRepository, StudentCourseRepository studentCourseRepository) {
+        this.studentRepository = studentRepository;
+        this.studentCourseRepository = studentCourseRepository;
     }
 
     /**
-     * 指定IDの学生を取得
+     * 全学生の詳細情報を取得
      */
-    @Transactional(readOnly = true)
-    public StudentDetail getStudent(Long id) {
-        Student student = studentRepository.findById(id);
-        if (student == null) {
-            throw new java.util.NoSuchElementException("Student not found: " + id);
-        }
-        List<StudentCourse> courses = studentCourseRepository.findByStudentId(id);
-        return StudentConverter.convertToStudentDetail(student, courses);
+    public List<StudentDetail> getAllStudents() {
+        List<Student> students = studentRepository.findAll();
+        List<StudentCourse> courses = studentCourseRepository.findAll();
+        return students.stream()
+                .map(s -> {
+                    List<StudentCourse> studentCourses = courses.stream()
+                            .filter(c -> c.getStudentId().equals(s.getId()))
+                            .collect(Collectors.toList());
+                    return new StudentDetail(s.getId(), s.getName(), s.getEmail(), s.getAge(), s.getSex(), s.getDeleted(), studentCourses);
+                })
+                .collect(Collectors.toList());
     }
 
     /**
      * 学生登録
      */
     @Transactional
-    public StudentDetail saveStudent(StudentDetail studentDetail) {
-        Student student = studentDetail.toStudent();
+    public StudentDetail registerStudent(StudentDetail detail) {
+        Student student = detail.toStudent();
         studentRepository.insertStudent(student);
-        if (studentDetail.getCourses() != null) {
-            studentDetail.getCourses().forEach(c -> c.setStudentId(student.getId()));
-            studentCourseRepository.insertAll(studentDetail.getCourses());
-        }
-        return getStudent(student.getId());
-    }
 
-    /**
-     * 学生更新
-     */
-    @Transactional
-    public StudentDetail updateStudent(StudentDetail studentDetail) {
-        Student student = studentDetail.toStudent();
-        studentRepository.updateStudent(student);
-        if (studentDetail.getCourses() != null) {
-            studentCourseRepository.updateAll(studentDetail.getCourses());
+        if (detail.getCourses() != null && !detail.getCourses().isEmpty()) {
+            detail.getCourses().forEach(c -> c.setStudentId(student.getId()));
+            studentCourseRepository.insertAll(detail.getCourses());
         }
-        return getStudent(student.getId());
+
+        return detail;
     }
 
     /**

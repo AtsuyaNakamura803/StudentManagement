@@ -1,53 +1,48 @@
 package raisetech.Student.Management.controller;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import raisetech.Student.Management.domain.StudentDetail;
 import raisetech.Student.Management.service.StudentService;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import java.util.List;
 
 /**
- * 学生 REST API
+ * 学生情報 API Controller
  */
 @RestController
 @RequestMapping("/student")
-@RequiredArgsConstructor
-@Validated
 public class StudentController {
 
     private final StudentService studentService;
 
-    /** 学生一覧取得 */
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
+    }
+
+    /**
+     * 全学生を取得
+     */
     @GetMapping("/list")
-    public List<StudentDetail> getAllStudents() {
-        return studentService.getAllStudents();
+    public ResponseEntity<List<StudentDetail>> getAllStudents() {
+        return ResponseEntity.ok(studentService.getAllStudents());
     }
 
-    /** 学生取得 */
-    @GetMapping("/{id}")
-    public StudentDetail getStudent(@PathVariable @Min(1) Long id) {
-        return studentService.getStudent(id);
-    }
-
-    /** 学生登録 */
+    /**
+     * 学生登録
+     */
     @PostMapping("/register")
-    public StudentDetail registerStudent(@Valid @RequestBody StudentDetail studentDetail) {
-        return studentService.saveStudent(studentDetail);
+    public ResponseEntity<StudentDetail> registerStudent(@Valid @RequestBody StudentDetail studentDetail) {
+        return ResponseEntity.ok(studentService.registerStudent(studentDetail));
     }
 
-    /** 学生更新 */
-    @PutMapping("/update")
-    public StudentDetail updateStudent(@Valid @RequestBody StudentDetail studentDetail) {
-        return studentService.updateStudent(studentDetail);
-    }
-
-    /** 学生削除 */
+    /**
+     * 学生削除
+     */
     @DeleteMapping("/{id}")
-    public void deleteStudent(@PathVariable @Min(1) Long id) {
+    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
         studentService.deleteStudent(id);
+        return ResponseEntity.noContent().build();
     }
 }

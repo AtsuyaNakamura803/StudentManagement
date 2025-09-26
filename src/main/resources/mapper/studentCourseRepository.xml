@@ -12,7 +12,7 @@
         WHERE deleted = FALSE
     </select>
 
-    <!-- 学生IDでコース一覧を取得 -->
+    <!-- 学生IDで取得 -->
     <select id="findByStudentId" parameterType="java.lang.Long"
             resultType="raisetech.Student.Management.data.StudentCourse">
         SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
@@ -20,7 +20,7 @@
         WHERE student_id = #{studentId} AND deleted = FALSE
     </select>
 
-    <!-- コース一括追加 -->
+    <!-- 一括登録 -->
     <insert id="insertAll" parameterType="java.util.List">
         INSERT INTO students_courses (student_id, course_name, course_start_at, course_end_at, deleted)
         VALUES
@@ -29,19 +29,7 @@
         </foreach>
     </insert>
 
-    <!-- コース一括更新 -->
-    <update id="updateAll" parameterType="java.util.List">
-        <foreach collection="list" item="course" separator=";">
-            UPDATE students_courses
-            SET course_name = #{course.courseName},
-            course_start_at = #{course.courseStartAt},
-            course_end_at = #{course.courseEndAt},
-            deleted = #{course.deleted}
-            WHERE id = #{course.id}
-        </foreach>
-    </update>
-
-    <!-- 学生IDでコース削除（論理削除） -->
+    <!-- 論理削除 -->
     <update id="deleteByStudentId" parameterType="java.lang.Long">
         UPDATE students_courses
         SET deleted = TRUE

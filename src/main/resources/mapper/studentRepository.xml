@@ -5,7 +5,7 @@
 
 <mapper namespace="raisetech.Student.Management.repository.StudentRepository">
 
-  <!-- 結果マップ -->
+  <!-- StudentResultMap -->
   <resultMap id="StudentResultMap" type="raisetech.Student.Management.data.Student">
     <id property="id" column="id"/>
     <result property="name" column="name"/>
@@ -22,21 +22,21 @@
     WHERE deleted = FALSE
   </select>
 
-  <!-- ID指定取得 -->
+  <!-- ID検索 -->
   <select id="findById" parameterType="java.lang.Long" resultMap="StudentResultMap">
     SELECT id, name, email, age, sex, deleted
     FROM students
     WHERE id = #{id} AND deleted = FALSE
   </select>
 
-  <!-- 学生登録 -->
+  <!-- 登録 -->
   <insert id="insertStudent" parameterType="raisetech.Student.Management.data.Student"
           useGeneratedKeys="true" keyProperty="id">
     INSERT INTO students (name, email, age, sex, deleted, created_at, updated_at)
     VALUES (#{name}, #{email}, #{age}, #{sex}, #{deleted}, NOW(), NOW())
   </insert>
 
-  <!-- 学生更新 -->
+  <!-- 更新 -->
   <update id="updateStudent" parameterType="raisetech.Student.Management.data.Student">
     UPDATE students
     SET name = #{name},
@@ -47,7 +47,7 @@
     WHERE id = #{id} AND deleted = FALSE
   </update>
 
-  <!-- 学生削除（論理削除） -->
+  <!-- 論理削除 -->
   <update id="deleteStudent" parameterType="java.lang.Long">
     UPDATE students
     SET deleted = TRUE,

@@ -1,10 +1,11 @@
 package raisetech.Student.Management.data;
 
 import lombok.Data;
+
 import java.time.LocalDate;
 
 /**
- * 学生のコース受講情報を表すデータクラス
+ * 学生コース情報エンティティ
  */
 @Data
 public class StudentCourse {
