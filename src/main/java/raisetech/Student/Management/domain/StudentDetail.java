@@ -5,11 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import raisetech.Student.Management.data.Student;
 import raisetech.Student.Management.data.StudentCourse;
+
 import java.util.List;
 
 /**
- * 学生詳細情報（学生 + 複数コース）を表すドメインクラス。
- * API レスポンスで返すためのオブジェクト。
+ * 学生詳細情報（学生 + コース複数）を表すドメインクラス
  */
 @Data
 @NoArgsConstructor
@@ -21,13 +21,11 @@ public class StudentDetail {
     private String email;
     private Integer age;
     private String gender;
-    private Boolean isDeleted;
+    private Boolean deleted;
     private List<StudentCourse> courses;
 
     /**
-     * StudentDetail から DB 保存用の Student エンティティに変換する。
-     *
-     * @return Student エンティティ
+     * StudentDetail から DB 保存用の Student に変換
      */
     public Student toStudent() {
         Student student = new Student();
@@ -36,7 +34,7 @@ public class StudentDetail {
         student.setEmail(this.email);
         student.setAge(this.age);
         student.setGender(this.gender);
-        student.setIsDeleted(this.isDeleted != null ? this.isDeleted : false);
+        student.setDeleted(this.deleted != null ? this.deleted : false);
         return student;
     }
 }

@@ -3,49 +3,45 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="raisetech.student.management.repository.StudentRepository">
+<mapper namespace="raisetech.Student.Management.repository.StudentRepository">
 
-  <!-- 列名に合わせてResultMapを定義 -->
   <resultMap id="StudentResultMap" type="raisetech.Student.Management.data.Student">
     <id property="id" column="id"/>
     <result property="name" column="name"/>
     <result property="email" column="email"/>
     <result property="age" column="age"/>
     <result property="gender" column="gender"/>
-    <result property="isDeleted" column="deleted"/>
+    <result property="deleted" column="deleted"/>
   </resultMap>
 
-  <!-- 全件取得 -->
   <select id="findAll" resultMap="StudentResultMap">
     SELECT * FROM students WHERE deleted = FALSE
   </select>
 
-  <!-- IDで取得 -->
-  <select id="findById" parameterType="long" resultMap="StudentResultMap">
+  <select id="findById" parameterType="java.lang.Long" resultMap="StudentResultMap">
     SELECT * FROM students WHERE id = #{id} AND deleted = FALSE
   </select>
 
-  <!-- 登録 -->
-  <insert id="insertStudent" parameterType="raisetech.Student.Management.data.Student" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO students (name, email, age, gender, deleted)
-    VALUES (#{name}, #{email}, #{age}, #{gender}, #{isDeleted})
+  <insert id="insertStudent" parameterType="raisetech.Student.Management.data.Student"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO students (name, email, age, gender, deleted, created_at, updated_at)
+    VALUES (#{name}, #{email}, #{age}, #{gender}, #{deleted}, NOW(), NOW())
   </insert>
 
-  <!-- 更新 -->
   <update id="updateStudent" parameterType="raisetech.Student.Management.data.Student">
     UPDATE students
     SET name = #{name},
     email = #{email},
     age = #{age},
     gender = #{gender},
-    deleted = #{isDeleted}
+    updated_at = NOW()
     WHERE id = #{id} AND deleted = FALSE
   </update>
 
-  <!-- 論理削除 -->
-  <update id="deleteStudent" parameterType="long">
+  <update id="deleteStudent" parameterType="java.lang.Long">
     UPDATE students
-    SET deleted = TRUE
+    SET deleted = TRUE,
+    updated_at = NOW()
     WHERE id = #{id}
   </update>
 
