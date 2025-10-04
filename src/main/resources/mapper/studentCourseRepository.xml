@@ -5,22 +5,18 @@
 
 <mapper namespace="raisetech.Student.Management.repository.StudentCourseRepository">
 
-    <!-- 全コース取得 -->
-    <select id="findAll" resultType="raisetech.Student.Management.data.StudentCourse">
-        SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
-        FROM students_courses
-        WHERE deleted = 0
-    </select>
+    <!-- 複数コース一括挿入 -->
+    <insert id="insertAll" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO students_courses
+        (student_id, course_name, course_start_at, course_end_at, deleted)
+        VALUES
+        <foreach collection="list" item="course" separator=",">
+            (#{course.studentId}, #{course.courseName}, #{course.courseStartAt}, #{course.courseEndAt}, 0)
+        </foreach>
+    </insert>
 
-    <!-- 学生別コース取得 -->
-    <select id="findByStudentId" parameterType="long" resultType="raisetech.Student.Management.data.StudentCourse">
-        SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
-        FROM students_courses
-        WHERE student_id = #{id} AND deleted = 0
-    </select>
-
-    <!-- 一括更新 -->
-    <update id="updateAll" parameterType="list">
+    <!-- 複数コース一括更新 -->
+    <update id="updateAll" parameterType="java.util.List">
         <foreach collection="list" item="course" separator=";">
             UPDATE students_courses
             SET course_name = #{course.courseName},
@@ -30,15 +26,21 @@
         </foreach>
     </update>
 
-    <!-- 一括挿入 -->
-    <insert id="insertAll" parameterType="list">
-        <foreach collection="list" item="course" separator=";">
-            INSERT INTO students_courses (student_id, course_name, course_start_at, course_end_at, deleted)
-            VALUES (#{course.studentId}, #{course.courseName}, #{course.courseStartAt}, #{course.courseEndAt}, 0)
-        </foreach>
-    </insert>
+    <!-- 学生IDで取得 -->
+    <select id="findByStudentId" parameterType="long" resultType="raisetech.Student.Management.data.StudentCourse">
+        SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
+        FROM students_courses
+        WHERE student_id = #{id} AND deleted = 0
+    </select>
 
-    <!-- 学生別論理削除 -->
+    <!-- 全コース取得（論理削除除外） -->
+    <select id="findAll" resultType="raisetech.Student.Management.data.StudentCourse">
+        SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
+        FROM students_courses
+        WHERE deleted = 0
+    </select>
+
+    <!-- 学生IDで論理削除 -->
     <update id="deleteByStudentId" parameterType="long">
         UPDATE students_courses
         SET deleted = 1

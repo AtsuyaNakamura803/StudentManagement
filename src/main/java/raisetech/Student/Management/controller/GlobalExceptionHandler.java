@@ -2,66 +2,75 @@ package raisetech.Student.Management.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import jakarta.validation.ConstraintViolationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import raisetech.Student.Management.domain.ErrorResponse;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
+import jakarta.validation.ValidationException;
 
 /**
- * グローバル例外ハンドラ
+ * グローバル例外ハンドラー
+ *
  * <p>
- * REST API で発生する例外を統一的にハンドリングし、
- * 適切な HTTP ステータスコードとメッセージを返却します。
- * </p>
+ * Controller で発生した例外を統一的にキャッチし、
+ * HTTP ステータス + エラーメッセージ形式で返す。
  */
-@RestControllerAdvice
+@ControllerAdvice
 public class GlobalExceptionHandler {
 
     /**
-     * バリデーション例外をハンドリングします。
-     * PathVariable や RequestParam のバリデーション失敗時に 400 を返します。
+     * Bean Validation の @Valid 失敗時のハンドリング
      *
-     * @param ex ConstraintViolationException
-     * @return HTTP 400 + エラー情報
+     * @param ex MethodArgumentNotValidException
+     * @return HTTP 400 + エラーメッセージ
      */
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleConstraintViolationException(ConstraintViolationException ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("error", "Validation failed");
-        response.put("message", ex.getMessage());
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .reduce((m1, m2) -> m1 + ", " + m2)
+                .orElse("Validation failed");
+        ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     /**
-     * 指定した要素が存在しない場合にハンドリングします。
-     * 404 Not Found を返却します。
+     * ValidationException のハンドリング（手動スローも含む）
+     *
+     * @param ex ValidationException
+     * @return HTTP 400 + エラーメッセージ
+     */
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
+        ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
+     * 存在しないリソースアクセス時のハンドリング
      *
      * @param ex NoSuchElementException
-     * @return HTTP 404 + エラー情報
+     * @return HTTP 404 + エラーメッセージ
      */
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Map<String, Object>> handleNoSuchElementException(NoSuchElementException ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("error", "Not Found");
-        response.put("message", ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleNoSuchElementException(NoSuchElementException ex) {
+        ErrorResponse response = new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     /**
-     * その他の例外をハンドリングします。
-     * 500 Internal Server Error を返却します。
+     * その他の例外をキャッチ
      *
      * @param ex Exception
-     * @return HTTP 500 + エラー情報
+     * @return HTTP 500 + エラーメッセージ
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleException(Exception ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("error", "Internal server error");
-        response.put("message", ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleOtherExceptions(Exception ex) {
+        // 内部例外はログに残すべき（ここでは簡略化）
+        ErrorResponse response = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Internal server error");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

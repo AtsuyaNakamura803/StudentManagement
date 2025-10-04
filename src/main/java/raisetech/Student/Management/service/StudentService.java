@@ -1,7 +1,5 @@
 package raisetech.Student.Management.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import raisetech.Student.Management.data.Student;
@@ -16,17 +14,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
+
 /**
  * 学生情報サービス
+ *
  * <p>
- * Student および StudentCourse の CRUD 操作を提供します。
- * getAllStudents では全コースをまとめて取得して N+1 問題を回避します。
- * </p>
+ * 学生およびコース情報の登録・更新・取得・削除を管理するサービスクラス。
+ * Bean Validation に基づく入力チェックを register/update に追加。
  */
 @Service
 public class StudentService {
-
-    private static final Logger logger = LoggerFactory.getLogger(StudentService.class);
 
     private final StudentRepository studentRepository;
     private final StudentCourseRepository studentCourseRepository;
@@ -40,11 +39,13 @@ public class StudentService {
     /**
      * 学生登録（学生＋コース）
      *
-     * @param studentDetail 登録情報
-     * @return 登録後の StudentDetail（ID 反映済）
+     * @param studentDetail 登録情報（@Valid でコース含む全項目を検証）
+     * @return 登録後の StudentDetail（ID反映済）
      */
     @Transactional
-    public StudentDetail registerStudent(StudentDetail studentDetail) {
+    public StudentDetail registerStudent(@Valid StudentDetail studentDetail) {
+        validateCourses(studentDetail.getCourses());
+
         Student student = studentDetail.toStudent();
         studentRepository.insertStudent(student);
 
@@ -64,36 +65,20 @@ public class StudentService {
     }
 
     /**
-     * 学生取得
-     *
-     * @param id 学生ID
-     * @return StudentDetail
-     */
-    public StudentDetail getStudent(Long id) {
-        Student student = studentRepository.findById(id);
-        if (student == null) {
-            throw new NoSuchElementException("Student not found with id: " + id);
-        }
-        List<StudentCourse> courses = studentCourseRepository.findByStudentId(id);
-        return StudentConverter.convertToStudentDetail(student, courses);
-    }
-
-    /**
      * 学生更新（学生＋コース）
-     * <p>
-     * 既存コースは updateAll、新規コースは insertAll で処理
-     * </p>
      *
-     * @param id            更新対象の学生ID
-     * @param studentDetail 更新情報
-     * @return 更新後の StudentDetail
+     * @param id 更新対象学生ID
+     * @param studentDetail 更新情報（@Valid）
+     * @return 更新後 StudentDetail
      */
     @Transactional
-    public StudentDetail updateStudent(Long id, StudentDetail studentDetail) {
+    public StudentDetail updateStudent(Long id, @Valid StudentDetail studentDetail) {
         Student student = studentRepository.findById(id);
         if (student == null) {
             throw new NoSuchElementException("Student not found with id: " + id);
         }
+
+        validateCourses(studentDetail.getCourses());
 
         student.setName(studentDetail.getName());
         student.setEmail(studentDetail.getEmail());
@@ -141,16 +126,13 @@ public class StudentService {
     }
 
     /**
-     * 全学生取得（N+1 回避＋SQL 発行件数ログ付き）
+     * 全学生取得（N+1 回避のため全コース一括取得）
      *
      * @return 学生リスト
      */
     public List<StudentDetail> getAllStudents() {
         List<Student> students = studentRepository.findAll();
         List<StudentCourse> courses = studentCourseRepository.findAll(); // 全コース取得
-
-        logger.info("getAllStudents(): {} students loaded", students.size());
-        logger.info("getAllStudents(): {} courses loaded", courses.size());
 
         List<StudentDetail> result = new ArrayList<>();
         for (Student student : students) {
@@ -161,10 +143,39 @@ public class StudentService {
                 }
             }
             result.add(StudentConverter.convertToStudentDetail(student, studentCourses));
+        }
+        return result;
+    }
 
-            logger.debug("Student {} has {} courses", student.getId(), studentCourses.size());
+    /**
+     * IDで学生取得
+     *
+     * @param id 学生ID
+     * @return StudentDetail
+     * @throws NoSuchElementException 学生が存在しない場合
+     */
+    public StudentDetail getStudent(Long id) {
+        Student student = studentRepository.findById(id);
+        if (student == null) {
+            throw new NoSuchElementException("Student not found with id: " + id);
         }
 
-        return result;
+        List<StudentCourse> courses = studentCourseRepository.findByStudentId(id);
+        return StudentConverter.convertToStudentDetail(student, courses);
+    }
+
+    /**
+     * コース情報の簡易バリデーション
+     *
+     * @param courses 登録・更新対象のコースリスト
+     * @throws ValidationException コース名が空の場合
+     */
+    private void validateCourses(List<StudentCourse> courses) {
+        if (courses == null) return;
+        for (StudentCourse course : courses) {
+            if (course.getCourseName() == null || course.getCourseName().isBlank()) {
+                throw new ValidationException("Course name must not be blank");
+            }
+        }
     }
 }

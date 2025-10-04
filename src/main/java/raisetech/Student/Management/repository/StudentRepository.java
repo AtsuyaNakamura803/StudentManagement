@@ -6,47 +6,38 @@ import java.util.List;
 
 /**
  * 学生情報 Repository (MyBatis Mapper)
- * <p>
- * MyBatis を使用した CRUD 操作を提供します。
- * XML マッパーで定義された SQL ステートメントと連携します。
- * </p>
  */
 @Mapper
 public interface StudentRepository {
 
     /**
-     * 全学生取得（論理削除済みを除外）
-     *
+     * 全学生取得（論理削除除外）
      * @return 学生リスト
      */
     List<Student> findAll();
 
     /**
-     * ID 指定で学生取得
-     *
+     * ID指定で学生取得
      * @param id 学生ID
-     * @return 指定IDの Student オブジェクト。存在しない場合は null。
+     * @return 学生情報
      */
     Student findById(Long id);
 
     /**
      * 学生登録
-     *
-     * @param student 登録対象の Student
+     * @param student 登録対象学生
      */
     void insertStudent(Student student);
 
     /**
-     * 学生情報更新
-     *
-     * @param student 更新対象の Student
+     * 学生更新
+     * @param student 更新対象学生
      */
     void updateStudent(Student student);
 
     /**
      * 学生論理削除
-     *
-     * @param id 削除対象の学生ID
+     * @param id 学生ID
      */
     void deleteStudent(Long id);
 }

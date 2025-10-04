@@ -23,7 +23,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     // Thymeleaf
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    // Jakarta Bean Validation (Spring Boot 3対応)
+    // Jakarta Bean Validation (Spring Boot 3 対応)
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     // ユーティリティライブラリ
     implementation 'org.apache.commons:commons-lang3:3.14.0'
