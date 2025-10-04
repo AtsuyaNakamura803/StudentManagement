@@ -6,39 +6,39 @@ import raisetech.Student.Management.data.Student;
 import java.util.List;
 
 /**
- * 学生情報リポジトリ（MyBatis Mapper インターフェース）
+ * 学生情報 Repository (MyBatis Mapper)
  */
 @Mapper
 public interface StudentRepository {
 
     /**
-     * 学生登録
-     * @param student 登録する学生
+     * 全学生取得（論理削除除外）
+     * @return 学生リスト
      */
-    void insertStudent(Student student);
+    List<Student> findAll();
+
+    /**
+     * ID指定で学生取得
+     * @param id 学生ID
+     * @return 学生情報
+     */
+    Student findById(@Param("id") Long id);
+
+    /**
+     * 学生登録
+     * @param student 登録対象学生
+     */
+    void insertStudent(@Param("student") Student student);
 
     /**
      * 学生更新
      * @param student 更新対象学生
      */
-    void updateStudent(Student student);
+    void updateStudent(@Param("student") Student student);
 
     /**
-     * 学生取得（ID）
-     * @param id 学生ID
-     * @return Student
-     */
-    Student findById(@Param("id") Long id);
-
-    /**
-     * 論理削除
+     * 学生論理削除
      * @param id 学生ID
      */
     void deleteStudent(@Param("id") Long id);
-
-    /**
-     * 全学生取得（deleted=false のみ）
-     * @return 学生リスト
-     */
-    List<Student> findAll();
 }

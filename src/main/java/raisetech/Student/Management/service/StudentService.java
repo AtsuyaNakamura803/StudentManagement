@@ -10,14 +10,12 @@ import raisetech.Student.Management.repository.StudentRepository;
 import raisetech.Student.Management.repository.StudentCourseRepository;
 import raisetech.Student.Management.controller.converter.StudentConverter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
  * 学生情報サービス
- * <p>
- * StudentRepository / StudentCourseRepository を用いて、学生情報の
- * 登録・取得・更新・削除を行います。
  */
 @Service
 public class StudentService {
@@ -31,22 +29,14 @@ public class StudentService {
         this.studentCourseRepository = studentCourseRepository;
     }
 
-    /**
-     * 学生登録（学生 + コース）
-     *
-     * @param studentDetail 登録情報
-     * @return 登録後の StudentDetail（ID 反映済）
-     */
+    /** 学生登録（学生＋コース） */
     @Transactional
     public StudentDetail registerStudent(StudentDetail studentDetail) {
-        // Student を DB 保存
         Student student = studentDetail.toStudent();
-        studentRepository.insertStudent(student);
+        studentRepository.insert(student); // Mapper 名に合わせ修正
 
-        // 生成された ID を StudentDetail に反映
         studentDetail.setId(student.getId());
 
-        // StudentCourse を DB 保存
         List<StudentCourse> courses = studentDetail.getCourses();
         if (courses != null && !courses.isEmpty()) {
             for (StudentCourse course : courses) {
@@ -54,81 +44,75 @@ public class StudentService {
             }
             studentCourseRepository.insertAll(courses);
         }
-
         return studentDetail;
     }
 
-    /**
-     * 学生取得
-     *
-     * @param id 学生ID
-     * @return StudentDetail
-     */
+    /** 学生取得 */
     public StudentDetail getStudent(Long id) {
         Student student = studentRepository.findById(id);
         if (student == null) {
-            throw new NoSuchElementException("指定IDの学生が存在しません: " + id);
+            throw new NoSuchElementException("Student not found with id: " + id);
         }
         List<StudentCourse> courses = studentCourseRepository.findByStudentId(id);
         return StudentConverter.convertToStudentDetail(student, courses);
     }
 
-    /**
-     * 全学生取得（論理削除済は除外）
-     *
-     * @return StudentDetail のリスト
-     */
-    public List<StudentDetail> getAllStudents() {
-        List<Student> students = studentRepository.findAll();
-        List<StudentCourse> courses = studentCourseRepository.findAll(); // 全コース取得
-        return StudentConverter.convertToStudentDetails(students, courses);
-    }
-
-    /**
-     * 学生削除（論理削除）
-     *
-     * @param id 学生ID
-     * @return 削除結果 DTO
-     */
-    @Transactional
-    public DeleteStudentResultDTO deleteStudent(Long id) {
-        studentRepository.deleteStudent(id);
-        studentCourseRepository.deleteByStudentId(id);
-        return new DeleteStudentResultDTO(id, true);
-    }
-
-    /**
-     * 学生更新
-     *
-     * @param id            学生ID
-     * @param studentDetail 更新内容
-     * @return 更新後 StudentDetail
-     */
+    /** 学生更新（既存コースはupdate、新規コースはinsert） */
     @Transactional
     public StudentDetail updateStudent(Long id, StudentDetail studentDetail) {
         Student student = studentRepository.findById(id);
         if (student == null) {
-            throw new NoSuchElementException("指定IDの学生が存在しません: " + id);
+            throw new NoSuchElementException("Student not found with id: " + id);
         }
 
-        // Student に更新内容を反映
         student.setName(studentDetail.getName());
         student.setEmail(studentDetail.getEmail());
         student.setAge(studentDetail.getAge());
-        student.setSex(studentDetail.getGender()); // Student.sex に反映
+        student.setSex(studentDetail.getGender());
+        studentRepository.update(student); // Mapper 名に合わせ修正
 
-        studentRepository.updateStudent(student);
-
-        // コース更新
         List<StudentCourse> courses = studentDetail.getCourses();
         if (courses != null && !courses.isEmpty()) {
+            List<StudentCourse> toUpdate = new ArrayList<>();
+            List<StudentCourse> toInsert = new ArrayList<>();
             for (StudentCourse course : courses) {
-                course.setStudentId(student.getId());
+                course.setStudentId(id);
+                if (course.getId() != null) {
+                    toUpdate.add(course);
+                } else {
+                    toInsert.add(course);
+                }
             }
-            studentCourseRepository.updateAll(courses);
+            if (!toUpdate.isEmpty()) studentCourseRepository.updateAll(toUpdate);
+            if (!toInsert.isEmpty()) studentCourseRepository.insertAll(toInsert);
         }
 
-        // 更新後の StudentDetail を返却
-        return getStudent(id);
+        List<StudentCourse> updatedCourses = studentCourseRepository.findByStudentId(id);
+        return StudentConverter.convertToStudentDetail(student, updatedCourses);
+    }
+
+    /** 学生削除（論理削除） */
+    @Transactional
+    public DeleteStudentResultDTO deleteStudent(Long id) {
+        studentRepository.deleteById(id); // Mapper 名に合わせ修正
+        studentCourseRepository.deleteByStudentId(id);
+        return new DeleteStudentResultDTO(id, true);
+    }
+
+    /** 全学生取得（N+1回避） */
+    public List<StudentDetail> getAllStudents() {
+        List<Student> students = studentRepository.findAll();
+        List<StudentCourse> courses = studentCourseRepository.findAll();
+        List<StudentDetail> result = new ArrayList<>();
+        for (Student student : students) {
+            List<StudentCourse> studentCourses = new ArrayList<>();
+            for (StudentCourse course : courses) {
+                if (course.getStudentId().equals(student.getId())) {
+                    studentCourses.add(course);
+                }
+            }
+            result.add(StudentConverter.convertToStudentDetail(student, studentCourses));
+        }
+        return result;
     }
 }

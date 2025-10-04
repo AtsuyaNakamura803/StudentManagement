@@ -6,28 +6,15 @@
 <mapper namespace="raisetech.Student.Management.repository.StudentRepository">
 
   <!-- 学生登録 -->
-  <insert id="insertStudent" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO students (name, email, age, sex, deleted, created_at, updated_at)
-    VALUES (#{name}, #{email}, #{age}, #{sex}, FALSE, NOW(), NOW())
+  <insert id="insertStudent" parameterType="raisetech.Student.Management.data.Student" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO students
+    (name, email, age, sex, deleted, created_at, updated_at)
+    VALUES
+    (#{name}, #{email}, #{age}, #{sex}, 0, NOW(), NOW())
   </insert>
 
-  <!-- 学生取得（ID） -->
-  <select id="findById" resultType="raisetech.Student.Management.data.Student">
-    SELECT id, name, email, age, sex, deleted, created_at, updated_at
-    FROM students
-    WHERE id = #{id} AND deleted = FALSE
-  </select>
-
-  <!-- 全学生取得 -->
-  <select id="findAll" resultType="raisetech.Student.Management.data.Student">
-    SELECT id, name, email, age, sex, deleted, created_at, updated_at
-    FROM students
-    WHERE deleted = FALSE
-    ORDER BY id
-  </select>
-
   <!-- 学生更新 -->
-  <update id="updateStudent">
+  <update id="updateStudent" parameterType="raisetech.Student.Management.data.Student">
     UPDATE students
     SET name = #{name},
     email = #{email},
@@ -37,10 +24,24 @@
     WHERE id = #{id}
   </update>
 
+  <!-- 学生取得 -->
+  <select id="findById" parameterType="long" resultType="raisetech.Student.Management.data.Student">
+    SELECT id, name, email, age, sex, deleted, created_at, updated_at
+    FROM students
+    WHERE id = #{id} AND deleted = 0
+  </select>
+
+  <!-- 全学生取得（論理削除済み除外） -->
+  <select id="findAll" resultType="raisetech.Student.Management.data.Student">
+    SELECT id, name, email, age, sex, deleted, created_at, updated_at
+    FROM students
+    WHERE deleted = 0
+  </select>
+
   <!-- 学生削除（論理削除） -->
-  <update id="deleteStudent">
+  <update id="deleteStudent" parameterType="long">
     UPDATE students
-    SET deleted = TRUE,
+    SET deleted = 1,
     updated_at = NOW()
     WHERE id = #{id}
   </update>
