@@ -22,7 +22,8 @@ import jakarta.validation.ValidationException;
  *
  * <p>
  * 学生およびコース情報の登録・更新・取得・削除を管理するサービスクラス。
- * Bean Validation に基づく入力チェックを register/update に追加。
+ * Bean Validation に基づく入力チェックを行い、@Transactional によって
+ * 登録・更新・削除処理の整合性を保証する。
  */
 @Service
 public class StudentService {
@@ -100,9 +101,13 @@ public class StudentService {
                 }
             }
 
+            // ✅ 個別 update 実行に変更（安全な方式）
             if (!toUpdate.isEmpty()) {
-                studentCourseRepository.updateAll(toUpdate);
+                for (StudentCourse course : toUpdate) {
+                    studentCourseRepository.update(course);
+                }
             }
+
             if (!toInsert.isEmpty()) {
                 studentCourseRepository.insertAll(toInsert);
             }
@@ -123,6 +128,21 @@ public class StudentService {
         studentRepository.deleteStudent(id);
         studentCourseRepository.deleteByStudentId(id);
         return new DeleteStudentResultDTO(id, true);
+    }
+
+    /**
+     * 学生を ID で取得
+     *
+     * @param id 学生ID
+     * @return 学生詳細情報
+     */
+    public StudentDetail getStudent(Long id) {
+        Student student = studentRepository.findById(id);
+        if (student == null) {
+            throw new NoSuchElementException("Student not found with id: " + id);
+        }
+        List<StudentCourse> courses = studentCourseRepository.findByStudentId(id);
+        return StudentConverter.convertToStudentDetail(student, courses);
     }
 
     /**
@@ -148,27 +168,9 @@ public class StudentService {
     }
 
     /**
-     * IDで学生取得
-     *
-     * @param id 学生ID
-     * @return StudentDetail
-     * @throws NoSuchElementException 学生が存在しない場合
-     */
-    public StudentDetail getStudent(Long id) {
-        Student student = studentRepository.findById(id);
-        if (student == null) {
-            throw new NoSuchElementException("Student not found with id: " + id);
-        }
-
-        List<StudentCourse> courses = studentCourseRepository.findByStudentId(id);
-        return StudentConverter.convertToStudentDetail(student, courses);
-    }
-
-    /**
      * コース情報の簡易バリデーション
      *
      * @param courses 登録・更新対象のコースリスト
-     * @throws ValidationException コース名が空の場合
      */
     private void validateCourses(List<StudentCourse> courses) {
         if (courses == null) return;

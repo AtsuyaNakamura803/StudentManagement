@@ -15,18 +15,17 @@
         </foreach>
     </insert>
 
-    <!-- 複数コース一括更新（separator 削除） -->
-    <update id="updateAll" parameterType="java.util.List">
-        <foreach collection="list" item="course">
-            UPDATE students_courses
-            SET course_name = #{course.courseName},
-            course_start_at = #{course.courseStartAt},
-            course_end_at = #{course.courseEndAt}
-            WHERE id = #{course.id}
-        </foreach>
+    <!-- 単一コース更新 -->
+    <update id="update" parameterType="raisetech.Student.Management.data.StudentCourse">
+        UPDATE students_courses
+        SET
+        course_name = #{courseName},
+        course_start_at = #{courseStartAt},
+        course_end_at = #{courseEndAt}
+        WHERE id = #{id}
     </update>
 
-    <!-- 学生IDで取得（parameterType を java.lang.Long に統一） -->
+    <!-- 学生IDで取得 -->
     <select id="findByStudentId" parameterType="java.lang.Long" resultType="raisetech.Student.Management.data.StudentCourse">
         SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
         FROM students_courses
@@ -40,7 +39,7 @@
         WHERE deleted = 0
     </select>
 
-    <!-- 学生IDで論理削除（parameterType を java.lang.Long に統一） -->
+    <!-- 学生IDで論理削除 -->
     <update id="deleteByStudentId" parameterType="java.lang.Long">
         UPDATE students_courses
         SET deleted = 1
