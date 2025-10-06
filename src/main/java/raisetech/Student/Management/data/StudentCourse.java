@@ -1,33 +1,18 @@
 package raisetech.Student.Management.data;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
- * 学生のコース情報
+ * 学生コース情報
  */
 public class StudentCourse {
 
-    /** コースID（DB自動生成） */
     private Long id;
-
-    /** 学生ID */
-    @NotNull(message = "studentId must not be null")
     private Long studentId;
-
-    /** コース名 */
-    @NotBlank(message = "courseName must not be blank")
     private String courseName;
-
-    /** コース開始日 */
-    private LocalDate courseStartAt;
-
-    /** コース終了日 */
-    private LocalDate courseEndAt;
-
-    /** 論理削除フラグ */
-    private Boolean deleted = false;
+    private LocalDateTime courseStartAt;
+    private LocalDateTime courseEndAt;
+    private Boolean deleted;
 
     // --- Getter / Setter ---
     public Long getId() {
@@ -54,19 +39,19 @@ public class StudentCourse {
         this.courseName = courseName;
     }
 
-    public LocalDate getCourseStartAt() {
+    public LocalDateTime getCourseStartAt() {
         return courseStartAt;
     }
 
-    public void setCourseStartAt(LocalDate courseStartAt) {
+    public void setCourseStartAt(LocalDateTime courseStartAt) {
         this.courseStartAt = courseStartAt;
     }
 
-    public LocalDate getCourseEndAt() {
+    public LocalDateTime getCourseEndAt() {
         return courseEndAt;
     }
 
-    public void setCourseEndAt(LocalDate courseEndAt) {
+    public void setCourseEndAt(LocalDateTime courseEndAt) {
         this.courseEndAt = courseEndAt;
     }
 
@@ -76,5 +61,10 @@ public class StudentCourse {
 
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    // MyBatis / JSON 用に isDeleted() も追加
+    public boolean isDeleted() {
+        return deleted != null && deleted;
     }
 }

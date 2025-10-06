@@ -6,19 +6,22 @@ import raisetech.Student.Management.domain.StudentDetail;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Student / StudentDetail 変換ユーティリティ
+ * Student ⇔ StudentDetail 変換ユーティリティ
+ *
+ * <p>
+ * Student データと StudentCourse データを StudentDetail に変換するためのユーティリティクラスです。
+ * </p>
  */
 public class StudentConverter {
 
     /**
-     * 単一 Student → StudentDetail に変換
+     * Student と StudentCourse のリストを StudentDetail に変換
      *
-     * @param student Student エンティティ
-     * @param courses コースリスト
-     * @return StudentDetail
+     * @param student Student データ
+     * @param courses StudentCourse リスト
+     * @return StudentDetail ドメインオブジェクト
      */
     public static StudentDetail convertToStudentDetail(Student student, List<StudentCourse> courses) {
         StudentDetail detail = new StudentDetail();
@@ -26,30 +29,38 @@ public class StudentConverter {
         detail.setName(student.getName());
         detail.setEmail(student.getEmail());
         detail.setAge(student.getAge());
-        detail.setGender(student.getSex()); // Student.sex → StudentDetail.gender
-        detail.setDeleted(student.getDeleted() != null ? student.getDeleted() : false);
+        detail.setGender(student.getSex()); // sex → gender
 
+        List<StudentDetail.CourseDetail> courseDetails = new ArrayList<>();
         if (courses != null) {
-            List<StudentCourse> studentCourses = courses.stream()
-                    .filter(c -> c.getStudentId().equals(student.getId()))
-                    .collect(Collectors.toList());
-            detail.setCourses(studentCourses);
+            for (StudentCourse course : courses) {
+                StudentDetail.CourseDetail c = new StudentDetail.CourseDetail(course);
+                courseDetails.add(c);
+            }
         }
+        detail.setCourses(courseDetails);
+
         return detail;
     }
 
     /**
-     * 複数 Student → StudentDetail リストに変換
+     * StudentDetail から Student に変換
      *
-     * @param students Student リスト
-     * @param courses  コースリスト
-     * @return StudentDetail のリスト
+     * @param detail StudentDetail
+     * @return Student
      */
-    public static List<StudentDetail> convertToStudentDetails(List<Student> students, List<StudentCourse> courses) {
-        List<StudentDetail> details = new ArrayList<>();
-        for (Student student : students) {
-            details.add(convertToStudentDetail(student, courses));
-        }
-        return details;
+    public static Student convertToStudent(StudentDetail detail) {
+        return detail.toStudent();
+    }
+
+    /**
+     * StudentDetail から StudentCourse のリストに変換
+     *
+     * @param detail StudentDetail
+     * @param studentId Student ID
+     * @return List<StudentCourse>
+     */
+    public static List<StudentCourse> convertToStudentCourses(StudentDetail detail, Long studentId) {
+        return detail.toStudentCourses(studentId);
     }
 }

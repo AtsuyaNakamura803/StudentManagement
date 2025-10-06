@@ -5,12 +5,24 @@
 
 <mapper namespace="raisetech.Student.Management.repository.StudentRepository">
 
+  <!-- 全学生取得 -->
+  <select id="findAll" resultType="raisetech.Student.Management.data.Student">
+    SELECT id, name, email, age, sex, deleted
+    FROM students
+    WHERE deleted = 0
+  </select>
+
+  <!-- 指定IDの学生取得 -->
+  <select id="findById" parameterType="long" resultType="raisetech.Student.Management.data.Student">
+    SELECT id, name, email, age, sex, deleted
+    FROM students
+    WHERE id = #{id} AND deleted = 0
+  </select>
+
   <!-- 学生登録 -->
   <insert id="insertStudent" parameterType="raisetech.Student.Management.data.Student" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO students
-    (name, email, age, sex, deleted, created_at, updated_at)
-    VALUES
-    (#{name}, #{email}, #{age}, #{sex}, 0, NOW(), NOW())
+    INSERT INTO students (name, email, age, sex, deleted)
+    VALUES (#{name}, #{email}, #{age}, #{sex}, #{deleted})
   </insert>
 
   <!-- 学生更新 -->
@@ -19,44 +31,14 @@
     SET name = #{name},
     email = #{email},
     age = #{age},
-    sex = #{sex},
-    updated_at = NOW()
-    WHERE id = #{id}
+    sex = #{sex}
+    WHERE id = #{id} AND deleted = 0
   </update>
 
-  <!-- 学生取得 -->
-  <select id="findById" parameterType="long" resultType="raisetech.Student.Management.data.Student">
-    SELECT id,
-    name,
-    email,
-    age,
-    sex,
-    deleted,
-    created_at,
-    updated_at
-    FROM students
-    WHERE id = #{id} AND deleted = 0
-  </select>
-
-  <!-- 全学生取得（論理削除除外） -->
-  <select id="findAll" resultType="raisetech.Student.Management.data.Student">
-    SELECT id,
-    name,
-    email,
-    age,
-    sex,
-    deleted,
-    created_at,
-    updated_at
-    FROM students
-    WHERE deleted = 0
-  </select>
-
-  <!-- 学生削除（論理削除） -->
+  <!-- 学生論理削除 -->
   <update id="deleteStudent" parameterType="long">
     UPDATE students
-    SET deleted = 1,
-    updated_at = NOW()
+    SET deleted = 1
     WHERE id = #{id}
   </update>
 
