@@ -1,46 +1,58 @@
 package raisetech.Student.Management.repository;
 
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 import raisetech.Student.Management.data.Student;
 
 import java.util.List;
 import java.util.Optional;
 
 /**
- * 学生情報 Repository
+ * 学生情報 Repository インターフェース（XML Mapper方式）
+ *
+ * <p>MyBatis の XML マッパーを使用して DB アクセスを行う。</p>
  */
-@Mapper
 public interface StudentRepository {
 
     /**
-     * 全学生取得
+     * 全学生取得（論理削除されていないもの）
+     *
      * @return 学生リスト
      */
     List<Student> findAll();
 
     /**
-     * 指定IDの学生取得
+     * ID で学生取得
+     *
      * @param id 学生ID
-     * @return 学生情報(Optional)
+     * @return 存在する場合は Optional で返却
      */
-    Optional<Student> findById(@Param("id") Long id);
+    Optional<Student> findById(Long id);
 
     /**
      * 学生登録
+     *
      * @param student 登録する学生
      */
     void insertStudent(Student student);
 
     /**
      * 学生更新
+     *
      * @param student 更新対象の学生
      */
     void updateStudent(Student student);
 
     /**
-     * 学生論理削除
+     * 学生存在確認
+     *
+     * @param id 学生ID
+     * @return 存在する場合 true
+     */
+    boolean existsById(Long id);
+
+    /**
+     * 学生削除（論理削除）
+     *
      * @param id 削除対象の学生ID
      */
-    void deleteStudent(@Param("id") Long id);
+    void deleteStudent(Long id);
 }

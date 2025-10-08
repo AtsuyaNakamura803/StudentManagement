@@ -5,23 +5,18 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.mybatis.spring.annotation.MapperScan;
 
 /**
- * StudentManagementアプリケーションの起動クラス。
+ * StudentManagement アプリケーション起動クラス。
  *
- * <p>
- * Spring Boot アプリケーションとして起動し、MyBatis の XML マッピングで
- * 定義された Mapper を自動スキャンする。
- * </p>
+ * <p>Spring Boot アプリケーションとして起動し、MyBatis の XML Mapper をスキャンします。</p>
  *
- * <p>
- * Mapper のスキャン対象パッケージ: {@code raisetech.Student.Management.repository}
- * </p>
+ * <p>Mapper スキャン対象パッケージ: {@code raisetech.Student.Management.repository}</p>
  */
 @SpringBootApplication
-@MapperScan("raisetech.Student.Management.repository") // MyBatis Mapperのスキャン
+@MapperScan("raisetech.Student.Management.repository")
 public class Application {
 
     /**
-     * アプリケーションのエントリーポイント。
+     * アプリケーションのエントリポイント。
      *
      * @param args コマンドライン引数
      */

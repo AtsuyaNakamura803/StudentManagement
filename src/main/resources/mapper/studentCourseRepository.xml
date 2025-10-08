@@ -6,42 +6,40 @@
 <mapper namespace="raisetech.Student.Management.repository.StudentCourseRepository">
 
     <!-- 学生IDでコース取得 -->
-    <select id="findByStudentId" resultType="raisetech.Student.Management.data.StudentCourse" parameterType="java.lang.Long">
-        SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
-        FROM students_courses
-        WHERE student_id = #{id} AND deleted = 0
+    <select id="findByStudentId" resultType="raisetech.Student.Management.data.StudentCourse">
+        SELECT *
+        FROM student_courses
+        WHERE student_id = #{studentId}
+        ORDER BY id ASC
     </select>
 
     <!-- 全コース取得 -->
     <select id="findAll" resultType="raisetech.Student.Management.data.StudentCourse">
-        SELECT id, student_id, course_name, course_start_at, course_end_at, deleted
-        FROM students_courses
-        WHERE deleted = 0
+        SELECT *
+        FROM student_courses
+        ORDER BY id ASC
     </select>
 
-    <!-- 一括挿入 -->
-    <insert id="insertAll" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO students_courses (student_id, course_name, course_start_at, course_end_at)
+    <!-- コース一括登録 -->
+    <insert id="insertAll">
+        INSERT INTO student_courses (student_id, course_name, created_at, updated_at)
         VALUES
         <foreach collection="list" item="course" separator=",">
-            (#{course.studentId}, #{course.courseName}, #{course.courseStartAt}, #{course.courseEndAt})
+            (#{course.studentId}, #{course.courseName}, NOW(), NOW())
         </foreach>
     </insert>
 
-    <!-- 単体コース更新 -->
-    <update id="update" parameterType="raisetech.Student.Management.data.StudentCourse">
-        UPDATE students_courses
-        SET course_name = #{courseName},
-        course_start_at = #{courseStartAt},
-        course_end_at = #{courseEndAt}
+    <!-- コース更新 -->
+    <update id="update">
+        UPDATE student_courses
+        SET course_name = #{courseName}, updated_at = NOW()
         WHERE id = #{id}
     </update>
 
-    <!-- 学生IDで論理削除 -->
-    <update id="deleteByStudentId" parameterType="java.lang.Long">
-        UPDATE students_courses
-        SET deleted = 1
-        WHERE student_id = #{id}
-    </update>
+    <!-- 学生IDでコース削除 -->
+    <delete id="deleteByStudentId">
+        DELETE FROM student_courses
+        WHERE student_id = #{studentId}
+    </delete>
 
 </mapper>
