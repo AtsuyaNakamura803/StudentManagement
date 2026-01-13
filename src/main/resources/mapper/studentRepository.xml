@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="raisetech.Student.Management.repository.StudentRepository">
+
+  <!-- 全学生取得（論理削除されていないもの） -->
+  <select id="findAll" resultType="raisetech.Student.Management.data.Student">
+    SELECT *
+    FROM students
+    WHERE deleted = FALSE
+    ORDER BY id ASC
+  </select>
+
+  <!-- ID で学生取得 -->
+  <select id="findById" resultType="raisetech.Student.Management.data.Student">
+    SELECT *
+    FROM students
+    WHERE id = #{id} AND deleted = FALSE
+  </select>
+
+  <!-- 学生登録 -->
+  <insert id="insertStudent" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO students (name, email, age, sex, deleted, created_at, updated_at)
+    VALUES (#{name}, #{email}, #{age}, #{sex}, FALSE, NOW(), NOW())
+  </insert>
+
+  <!-- 学生更新 -->
+  <update id="updateStudent">
+    UPDATE students
+    SET name = #{name},
+    email = #{email},
+    age = #{age},
+    sex = #{sex},
+    updated_at = NOW()
+    WHERE id = #{id} AND deleted = FALSE
+  </update>
+
+  <!-- 存在確認 -->
+  <select id="existsById" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM students
+    WHERE id = #{id} AND deleted = FALSE
+  </select>
+
+  <!-- 論理削除 -->
+  <update id="deleteStudent">
+    UPDATE students
+    SET deleted = TRUE,
+    updated_at = NOW()
+    WHERE id = #{id}
+  </update>
+
+</mapper>

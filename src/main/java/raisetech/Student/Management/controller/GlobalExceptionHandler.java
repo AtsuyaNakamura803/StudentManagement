@@ -1,5 +1,4 @@
-package raisetech.Student.Management.controller;
-
+package raisetech.Student.Management.controller.advice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,40 +6,49 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import raisetech.Student.Management.domain.ErrorResponse;
+import raisetech.Student.Management.service.StudentNotFoundException;
 
-import java.util.HashMap;
-import java.util.Map;
+import jakarta.validation.ConstraintViolationException;
 
 /**
- * グローバル例外ハンドラ。
- * 共通的に例外をキャッチしてクライアントに適切なレスポンスを返します。
+ * アプリ全体の例外を一括ハンドリングするクラス
+ *
+ * <p>500 系は内部メッセージを返さず、ログに詳細を残す設計。
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
-        logger.warn("Illegal argument: {}", ex.getMessage());
-        Map<String, String> body = new HashMap<>();
-        body.put("error", "指定されたリソースが存在しません");
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    /** StudentNotFoundException を 404 として返す */
+    @ExceptionHandler(StudentNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleStudentNotFound(StudentNotFoundException ex) {
+        // ログには詳細を出力
+        logger.warn("Student not found", ex);
+        // API には安全なメッセージだけ返す
+        ErrorResponse response = new ErrorResponse(HttpStatus.NOT_FOUND.value(),
+                "指定された学生は存在しません。");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException ex) {
-        logger.error("Illegal state: {}", ex.getMessage());
-        Map<String, String> body = new HashMap<>();
-        body.put("error", "サーバー内部でエラーが発生しました");
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+    /** バリデーションエラー (ConstraintViolation) を 400 として返す */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
+        logger.warn("Validation failed", ex);
+        ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                "入力値に誤りがあります。");
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    /** それ以外の例外を 500 として返す */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
-        logger.error("Unexpected error occurred", ex);
-        Map<String, String> body = new HashMap<>();
-        body.put("error", "予期せぬエラーが発生しました");
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+    public ResponseEntity<ErrorResponse> handleAll(Exception ex) {
+        // スタックトレースなど詳細はログに出力
+        logger.error("Internal server error", ex);
+        // API には安全な汎用メッセージだけ返す
+        ErrorResponse response = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "サーバ内部でエラーが発生しました。");
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
